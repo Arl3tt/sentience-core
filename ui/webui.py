@@ -343,7 +343,7 @@ async def training_history():
     # Add headers
     html += ''.join(f'<th>{field}</th>' for field in FIELDNAMES)
     html += '</tr>'
-    
+
     # Add rows
     for row in reversed(rows):  # Most recent first
         html += '<tr>'
@@ -354,11 +354,11 @@ async def training_history():
                 try:
                     dt = datetime.fromisoformat(value)
                     value = dt.strftime('%Y-%m-%d %H:%M:%S')
-                except:
+                except Exception:
                     pass
             html += f'<td>{value}</td>'
         html += '</tr>'
-    
+
     html += '''
         </table>
     </body>

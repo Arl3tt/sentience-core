@@ -15,4 +15,3 @@ def pretty(obj):
         print(json.dumps(obj, indent=2, ensure_ascii=False))
     except Exception:
         print(obj)
-
