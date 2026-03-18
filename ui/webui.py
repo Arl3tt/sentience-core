@@ -308,19 +308,20 @@ async def search(q: str = Form(...)):
         body += f"<div><b>{h.get('id')}</b>: {h.get('doc')[:300]}...</div><hr/>"
     return HTMLResponse(body)
 
+
 @app.get('/history', response_class=HTMLResponse)
 async def training_history():
     """Display model training history"""
     import csv
     from core.tools.model_logger import HISTORY_FILE, FIELDNAMES
-    
+
     try:
         with open(HISTORY_FILE, 'r') as f:
             reader = csv.DictReader(f)
             rows = list(reader)
     except FileNotFoundError:
         rows = []
-    
+
     # Generate HTML table
     html = '''
     <!DOCTYPE html>
@@ -339,7 +340,7 @@ async def training_history():
         <table>
             <tr>
     '''
-    
+
     # Add headers
     html += ''.join(f'<th>{field}</th>' for field in FIELDNAMES)
     html += '</tr>'
