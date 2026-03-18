@@ -1,4 +1,8 @@
+"""Test P300 Speller module."""
+import numpy as np
+
 from core.tools import P300Speller, extract_p300_features, classify_p300_response, create_speller_interface
+
 
 def test_extract_features_epoch(sample_epoch):
     sp = P300Speller()

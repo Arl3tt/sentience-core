@@ -29,6 +29,7 @@ MODEL_DIR = os.path.join("data", "models")
 os.makedirs(OUT_DIR, exist_ok=True)
 os.makedirs(MODEL_DIR, exist_ok=True)
 
+
 def simulate_eeg(n_samples=400, n_channels=8, duration_s=1.0, sfreq=128):
     """
     Simulate pseudo-EEG epochs for two classes.
@@ -57,6 +58,7 @@ def simulate_eeg(n_samples=400, n_channels=8, duration_s=1.0, sfreq=128):
             X[i, ch, :] = signal
     return X, y, sfreq
 
+
 def extract_features(X, sfreq):
     """
     Very simple feature extractor:
@@ -65,9 +67,10 @@ def extract_features(X, sfreq):
     Returns features shape (n_samples, n_channels * n_features_per_channel)
     """
     n_samples, n_channels, n_times = X.shape
-    freqs = np.fft.rfftfreq(n_times, 1.0/sfreq)
+    freqs = np.fft.rfftfreq(n_times, 1.0 / sfreq)
+
     def band_power(epoch, fmin, fmax):
-        fft = np.abs(np.fft.rfft(epoch))**2
+        fft = np.abs(np.fft.rfft(epoch)) ** 2
         mask = (freqs >= fmin) & (freqs <= fmax)
         return fft[mask].sum()
 
@@ -87,6 +90,7 @@ def extract_features(X, sfreq):
         feats.append(ch_feats)
     return np.array(feats, dtype=np.float32)
 
+
 def run_training(X, y, sfreq, params=None):
     start = time.time()
 
@@ -99,7 +103,9 @@ def run_training(X, y, sfreq, params=None):
     feats = extract_features(X, sfreq)
 
     # Train-test split
-    X_train, X_test, y_train, y_test = train_test_split(feats, y, test_size=0.2, random_state=RNG_SEED, stratify=y)
+    X_train, X_test, y_train, y_test = train_test_split(
+        feats, y, test_size=0.2, random_state=RNG_SEED, stratify=y
+    )
 
     # Model: lightweight classifier
     clf = LogisticRegression(max_iter=500, solver='liblinear')
@@ -118,6 +124,7 @@ def run_training(X, y, sfreq, params=None):
         "model_id": "sim_eeg_logreg",
         "model_path": model_path,
         "accuracy": float(acc),
+        "classification_report": report,
         "n_train": int(X_train.shape[0]),
         "n_test": int(X_test.shape[0]),
         "params": params or {},
@@ -158,6 +165,7 @@ def run_training(X, y, sfreq, params=None):
 
     return summary
 
+
 def parse_args():
     """Parse command line arguments"""
     import argparse
@@ -167,6 +175,7 @@ def parse_args():
     parser.add_argument("--duration_s", type=float, default=1.0, help="Duration of each sample in seconds")
     parser.add_argument("--sfreq", type=float, default=128, help="Sampling frequency in Hz")
     return parser.parse_args()
+
 
 if __name__ == "__main__":
     args = parse_args()

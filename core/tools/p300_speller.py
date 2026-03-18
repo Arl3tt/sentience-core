@@ -6,7 +6,7 @@ that can be used for integration tests and profiling. For production use,
 replace with a trained classifier and more sophisticated averaging.
 """
 import numpy as np
-from typing import Dict, Any, Tuple, List
+from typing import Dict, Tuple
 from scipy import signal
 
 

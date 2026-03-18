@@ -1,11 +1,12 @@
 """
 ASD Attention Analysis Tool
-Analyzes EEG patterns related to Autism Spectrum Disorder attention characteristics
-Includes attention anomaly detection, social attention processing, and executive function metrics
+
+Analyzes EEG patterns related to Autism Spectrum Disorder attention characteristics.
+Includes attention anomaly detection, social attention processing, and executive function metrics.
 """
 
 import numpy as np
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List
 from collections import deque
 from dataclasses import dataclass
 
@@ -186,8 +187,6 @@ class ASDAttentionAnalyzer:
 
     def _detect_repetitive_patterns(self, eeg_signal: np.ndarray) -> float:
         """Detect repetitive or stereotyped patterns in EEG"""
-        from scipy.signal import correlate
-
         # Check for self-similarity (characteristic of repetitive patterns)
         if len(eeg_signal) < 1000:
             return 0.0

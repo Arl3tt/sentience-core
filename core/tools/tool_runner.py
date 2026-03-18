@@ -1,5 +1,9 @@
 # Safe tool runner utilities
-import subprocess, sys, tempfile, os
+import os
+import subprocess
+import sys
+import tempfile
+
 from config import SAFE_MODE
 
 
@@ -14,10 +18,19 @@ def run_python_snippet(code: str, timeout_s=20, require_confirm=True):
     with open(fname, 'w', encoding='utf-8') as f:
         f.write(code)
     try:
-        p = subprocess.run([sys.executable, fname], capture_output=True, text=True, timeout=timeout_s)
-        return {'stdout': p.stdout, 'stderr': p.stderr, 'returncode': p.returncode}
+        p = subprocess.run(
+            [sys.executable, fname],
+            capture_output=True,
+            text=True,
+            timeout=timeout_s,
+        )
+        return {
+            "stdout": p.stdout,
+            "stderr": p.stderr,
+            "returncode": p.returncode,
+        }
     except subprocess.TimeoutExpired:
-        return {'stdout': '', 'stderr': 'timeout', 'returncode': -1}
+        return {"stdout": "", "stderr": "timeout", "returncode": -1}
     finally:
         try:
             os.remove(fname)
@@ -32,7 +45,17 @@ def run_shell(cmd: str, require_confirm=True):
         if ok.strip().lower() != 'y':
             return {'status': 'aborted'}
     try:
-        p = subprocess.run(cmd, capture_output=True, text=True, shell=True, timeout=60)
-        return {'stdout': p.stdout, 'stderr': p.stderr, 'returncode': p.returncode}
+        p = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            shell=True,
+            timeout=60,
+        )
+        return {
+            "stdout": p.stdout,
+            "stderr": p.stderr,
+            "returncode": p.returncode,
+        }
     except Exception as e:
-        return {'error': str(e)}
+        return {"error": str(e)}

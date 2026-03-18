@@ -72,14 +72,25 @@ def bandpower_simple(x: np.ndarray, fs: float, band: tuple) -> float:
     return float(psd[idx].sum()) if np.any(idx) else 0.0
 
 
-def classify_motor_imagery(eeg_signal: np.ndarray, fs: float = 250.0, model: Optional[MotorImageryNet] = None) -> Dict[str, Any]:
+def classify_motor_imagery(
+    eeg_signal: np.ndarray,
+    fs: float = 250.0,
+    model: Optional[MotorImageryNet] = None,
+) -> Dict[str, Any]:
     feats = extract_motor_imagery_features(eeg_signal, fs)
     classes = ["left_hand", "right_hand", "feet", "tongue"]
     if model is not None and getattr(model, "model", None) is not None:
         X = np.array([list(feats.values())])
         try:
             preds, probs = model.predict(X)
-            return {"method": "sklearn", "predicted_class": classes[int(preds[0])], "class_probabilities": {c: float(p) for c, p in zip(classes, probs[0])}, "confidence": float(max(probs[0]))}
+            return {
+                "method": "sklearn",
+                "predicted_class": classes[int(preds[0])],
+                "class_probabilities": {
+                    c: float(p) for c, p in zip(classes, probs[0])
+                },
+                "confidence": float(max(probs[0])),
+            }
         except Exception:
             pass
 

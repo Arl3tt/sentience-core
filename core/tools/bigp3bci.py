@@ -15,7 +15,6 @@ Functions:
 
 from typing import Optional, Dict, Any, Tuple
 import os
-import io
 import zipfile
 import json
 import numpy as np
@@ -107,7 +106,12 @@ def load_bigp3_record(record_path: str) -> Dict[str, Any]:
         raise RuntimeError(f"Unsupported record format: {record_path}")
 
 
-def preprocess_bigp3(raw_data: Dict[str, Any], fs: Optional[float] = None, band: Tuple[float, float] = (0.5, 30.0), downsample_to: Optional[float] = None) -> Dict[str, Any]:
+def preprocess_bigp3(
+    raw_data: Dict[str, Any],
+    fs: Optional[float] = None,
+    band: Tuple[float, float] = (0.5, 30.0),
+    downsample_to: Optional[float] = None,
+) -> Dict[str, Any]:
     """
     Preprocess raw bigP3 data.
     - Expects raw_data to include `signals` (samples, channels) and optionally `fs`.

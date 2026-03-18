@@ -4,7 +4,6 @@ LangGraph integration helpers for BCI tools.
 Provides simple integration utilities to wire the 6 BCI tools into the
 LangGraphPlanner and run a quick integration test.
 """
-from typing import Optional
 from core.langgraph_planner import LangGraphPlanner
 
 

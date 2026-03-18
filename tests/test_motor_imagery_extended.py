@@ -1,4 +1,6 @@
 """Comprehensive tests for Motor Imagery CNN and Neurofeedback modules."""
+import numpy as np
+
 from core.tools.motor_imagery_cnn import (
     MotorImageryNet,
     extract_motor_imagery_features,

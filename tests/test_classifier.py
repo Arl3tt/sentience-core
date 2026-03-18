@@ -1,5 +1,9 @@
 """Test script for neural session persistence with classifier."""
 import json
+import os
+
+import numpy as np
+
 from memory.memory_controller import save_neural_session
 
 # Create some sample session data

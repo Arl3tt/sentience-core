@@ -137,26 +137,92 @@ class LangGraphPlanner:
             ToolWrapper("semantic_search", semantic_search, "Semantic search tool"),
             ToolWrapper("run_python_snippet", run_python_snippet, "Execute python snippet"),
             ToolWrapper("run_shell", run_shell, "Run shell command"),
-            ToolWrapper("sandbox_runner", run_in_sandbox, "Run code in sandbox")
+            ToolWrapper("sandbox_runner", run_in_sandbox, "Run code in sandbox"),
         ]
 
         # Register BCI tools if available in core.tools
         try:
-            tools.append(ToolWrapper("classify_brainwave_bands", ctools.classify_brainwave_bands, "Brain wave band classifier"))
-            tools.append(ToolWrapper("classify_cognitive_state", ctools.classify_cognitive_state, "Cognitive state classifier"))
-            tools.append(ToolWrapper("classify_multi_channel", ctools.classify_multi_channel, "Multi-channel aggregator"))
+            tools.append(
+                ToolWrapper(
+                    "classify_brainwave_bands",
+                    ctools.classify_brainwave_bands,
+                    "Brain wave band classifier",
+                )
+            )
+            tools.append(
+                ToolWrapper(
+                    "classify_cognitive_state",
+                    ctools.classify_cognitive_state,
+                    "Cognitive state classifier",
+                )
+            )
+            tools.append(
+                ToolWrapper(
+                    "classify_multi_channel",
+                    ctools.classify_multi_channel,
+                    "Multi-channel aggregator",
+                )
+            )
 
-            tools.append(ToolWrapper("classify_motor_imagery", ctools.classify_motor_imagery, "Motor imagery classifier"))
-            tools.append(ToolWrapper("extract_motor_imagery_features", ctools.extract_motor_imagery_features, "Motor imagery feature extractor"))
+            tools.append(
+                ToolWrapper(
+                    "classify_motor_imagery",
+                    ctools.classify_motor_imagery,
+                    "Motor imagery classifier",
+                )
+            )
+            tools.append(
+                ToolWrapper(
+                    "extract_motor_imagery_features",
+                    ctools.extract_motor_imagery_features,
+                    "Motor imagery feature extractor",
+                )
+            )
 
-            tools.append(ToolWrapper("P300Speller", ctools.P300Speller, "P300 speller tool"))
-            tools.append(ToolWrapper("create_speller_interface", ctools.create_speller_interface, "Create P300 speller instance"))
-            tools.append(ToolWrapper("classify_p300_response", ctools.classify_p300_response, "Classify P300 row/col responses"))
+            tools.append(
+                ToolWrapper(
+                    "P300Speller",
+                    ctools.P300Speller,
+                    "P300 speller tool",
+                )
+            )
+            tools.append(
+                ToolWrapper(
+                    "create_speller_interface",
+                    ctools.create_speller_interface,
+                    "Create P300 speller instance",
+                )
+            )
+            tools.append(
+                ToolWrapper(
+                    "classify_p300_response",
+                    ctools.classify_p300_response,
+                    "Classify P300 row/col responses",
+                )
+            )
 
-            tools.append(ToolWrapper("create_neurofeedback_session", ctools.create_neurofeedback_session, "Create neurofeedback session"))
+            tools.append(
+                ToolWrapper(
+                    "create_neurofeedback_session",
+                    ctools.create_neurofeedback_session,
+                    "Create neurofeedback session",
+                )
+            )
 
-            tools.append(ToolWrapper("create_hybrid_bci", ctools.create_hybrid_bci, "Hybrid BCI fusion"))
-            tools.append(ToolWrapper("ASDAttentionAnalyzer", ctools.ASDAttentionAnalyzer, "ASD attention analyzer"))
+            tools.append(
+                ToolWrapper(
+                    "create_hybrid_bci",
+                    ctools.create_hybrid_bci,
+                    "Hybrid BCI fusion",
+                )
+            )
+            tools.append(
+                ToolWrapper(
+                    "ASDAttentionAnalyzer",
+                    ctools.ASDAttentionAnalyzer,
+                    "ASD attention analyzer",
+                )
+            )
         except Exception:
             # If any of the tools are not available, continue with the baseline tools
             pass
@@ -179,7 +245,13 @@ class LangGraphPlanner:
             # Simple heuristic / placeholder: if workflow_config contains a planner prompt
             prompt_template = None
             try:
-                prompt_template = self.workflow_config.get("nodes", {}).get("planner", {}).get("config", {}).get("prompt_template")
+                prompt_template = (
+                    self.workflow_config
+                    .get("nodes", {})
+                    .get("planner", {})
+                    .get("config", {})
+                    .get("prompt_template")
+                )
             except Exception:
                 prompt_template = None
 
@@ -188,15 +260,24 @@ class LangGraphPlanner:
             tasks = []
             goal_text = state.get("goal", "")
             if goal_text:
-                tasks.append({
-                    "id": "t1",
-                    "description": f"Echo goal: {goal_text}",
-                    "tool": "run_shell",
-                    "args": {"cmd": f"echo {json.dumps(goal_text)}"}
-                })
+                echo_cmd = f"echo {json.dumps(goal_text)}"
+                tasks.append(
+                    {
+                        "id": "t1",
+                        "description": f"Echo goal: {goal_text}",
+                        "tool": "run_shell",
+                        "args": {"cmd": echo_cmd},
+                    }
+                )
+
+            # Make sure we don't have unused variable warnings when no prompt_template exists
+            if prompt_template is not None:
+                _ = prompt_template
 
             state["tasks"] = tasks
-            state["updates"].append({"status": "Tasks created", "progress": 0.25, "tasks": tasks})
+            state["updates"].append(
+                {"status": "Tasks created", "progress": 0.25, "tasks": tasks}
+            )
             return "task_executor"
 
         def task_executor(state: Dict):
@@ -206,7 +287,13 @@ class LangGraphPlanner:
 
             task = state["tasks"].pop(0)
             state["current_task"] = task
-            state["updates"].append({"status": f"Running {task.get('description')}", "progress": 0.5, "current_task": task})
+            state["updates"].append(
+                {
+                    "status": f"Running {task.get('description')}",
+                    "progress": 0.5,
+                    "current_task": task,
+                }
+            )
 
             # Find tool
             tool = next((t for t in self.tools if t.name == task.get("tool")), None)
@@ -215,10 +302,21 @@ class LangGraphPlanner:
                 if tool is None:
                     raise RuntimeError(f"Tool {task.get('tool')} not available")
                 result = tool.invoke(task.get("args", {}))
-                state.setdefault("messages", []).append({"role": "system", "content": f"Task result: {str(result)}"})
-                state["updates"].append({"status": "Task completed", "progress": 0.8, "current_task": task, "result": result})
+                state.setdefault("messages", []).append(
+                    {"role": "system", "content": f"Task result: {str(result)}"}
+                )
+                state["updates"].append(
+                    {
+                        "status": "Task completed",
+                        "progress": 0.8,
+                        "current_task": task,
+                        "result": result,
+                    }
+                )
             except Exception as e:
-                state["updates"].append({"status": f"Task error: {str(e)}", "progress": 1.0, "error": str(e)})
+                state["updates"].append(
+                    {"status": f"Task error: {str(e)}", "progress": 1.0, "error": str(e)}
+                )
 
             # Continue if there are more tasks
             return "task_executor" if state.get("tasks") else END

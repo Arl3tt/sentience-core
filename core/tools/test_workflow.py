@@ -7,6 +7,7 @@ from core.langgraph_runner import SentienceWorkflow
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
+
 def test_workflow():
     """Run a simple workflow test"""
     workflow = SentienceWorkflow()
@@ -19,6 +20,7 @@ def test_workflow():
     log.info("Workflow completed successfully")
     log.info(f"Final result: {result}")
     assert result is not None, "Workflow result should not be None"
+
 
 if __name__ == "__main__":
     test_workflow()

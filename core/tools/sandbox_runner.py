@@ -9,9 +9,12 @@ import subprocess
 from typing import Dict, Any, Optional
 import json
 
-def run_in_sandbox(command: str,
-                  timeout: int = 30,
-                  env: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
+
+def run_in_sandbox(
+    command: str,
+    timeout: int = 30,
+    env: Optional[Dict[str, str]] = None,
+) -> Dict[str, Any]:
     """
     Run a command in the sandbox container
 
@@ -69,7 +72,10 @@ def run_in_sandbox(command: str,
         )
     except (subprocess.CalledProcessError, FileNotFoundError):
         # Docker build failed or docker-compose not available; fall back to local execution
-        print(f"WARNING: Docker build failed or docker-compose unavailable; falling back to local execution", file=sys.stderr)
+        print(
+            "WARNING: Docker build failed or docker-compose unavailable; falling back to local execution",
+            file=sys.stderr,
+        )
         try:
             result = subprocess.run(
                 command,
@@ -138,8 +144,9 @@ def run_in_sandbox(command: str,
             "status": "error",
             "output": "",
             "error": str(e),
-            "code": -1
+            "code": -1,
         }
+
 
 def _check_docker() -> bool:
     """Check if docker and docker-compose are available"""
@@ -157,6 +164,7 @@ def _check_docker() -> bool:
         return True
     except (subprocess.CalledProcessError, FileNotFoundError):
         return False
+
 
 if __name__ == "__main__":
     # Example usage

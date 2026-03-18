@@ -24,3 +24,47 @@ Quick start (Windows, PowerShell):
 5. pip install -r requirements.txt
 6. copy .env.example to .env and set OPENAI_API_KEY
 7. python main.py
+
+## Testing
+
+All code is tested with pytest and must pass flake8 linting. To run tests locally:
+
+```bash
+# Run all tests
+python -m pytest tests/ -v
+
+# Run tests with coverage report
+python -m pytest tests/ --cov=core --cov=memory --cov-report=html
+
+# Run linting check
+python -m flake8 --max-line-length=120
+
+# Run security check
+bandit -r core memory models data
+```
+
+**Test Suite:**
+- 57 unit and integration tests covering core modules
+- Tests for BCI tools, neural processing, and memory subsystems
+- Mock-based testing to avoid external dependencies
+
+## Continuous Integration / Continuous Deployment (CI/CD)
+
+This project uses GitHub Actions for automated testing, linting, and security checks:
+
+**Workflows:**
+- **CI Pipeline** (`ci.yml`): Runs on every push and pull request
+  - Linting with flake8 (max-line-length=120)
+  - Full test suite with coverage reporting
+  - Security scanning with bandit
+  - Performance profiling (main branch only)
+  
+- **CodeQL Security Analysis** (`codeql.yml`): Weekly scans + on PRs
+  - Automated security vulnerability detection
+  - Code quality analysis
+
+**Status Badges & Reports:**
+- Coverage reports are uploaded as build artifacts
+- CodeQL results visible in repository security tab
+- All builds must pass before merge to main
+

@@ -52,17 +52,30 @@ def mutate_system_prompt(system_prompt: str, policy: str) -> str:
     LLM callers can use.
     """
     additions = {
-        "boost_focus": "Prioritize concise, high-focus steps and minimize small talk.",
-        "rest": "Suggest short rest, breathing, or low-effort tasks to recover attention.",
-        "maintain": "Proceed as normal, balancing depth and brevity."
+        "boost_focus": (
+            "Prioritize concise, high-focus steps and minimize small talk."
+        ),
+        "rest": (
+            "Suggest short rest, breathing, or low-effort tasks to recover attention."
+        ),
+        "maintain": "Proceed as normal, balancing depth and brevity.",
     }
     suffix = additions.get(policy, "")
     if suffix:
-        return f"{system_prompt}\n\n[NeuroPolicy:{policy}] {suffix}"
+        return (
+            f"{system_prompt}\n\n[NeuroPolicy:{policy}] "
+            f"{suffix}"
+        )
     return system_prompt
 
 
-def neuro_weighted_retrieval(query: str, alpha: float, beta: float, neural_embedding: List[float], top_k: int = 5) -> List[Dict[str, Any]]:
+def neuro_weighted_retrieval(
+    query: str,
+    alpha: float,
+    beta: float,
+    neural_embedding: List[float],
+    top_k: int = 5,
+) -> List[Dict[str, Any]]:
     """Hybrid retrieval that combines semantic relevance and neural similarity.
 
     - `alpha` weights semantic (text) relevance.
@@ -98,7 +111,14 @@ def neuro_weighted_retrieval(query: str, alpha: float, beta: float, neural_embed
         if s is None:
             # fallback: higher rank => higher score
             s = 1.0 / (idx + 1)
-        scores.setdefault(hid, {"semantic": 0.0, "neural": 0.0, "doc": h.get("doc") or h.get("text") or h.get("documents")})
+        scores.setdefault(
+            hid,
+            {
+                "semantic": 0.0,
+                "neural": 0.0,
+                "doc": h.get("doc") or h.get("text") or h.get("documents"),
+            },
+        )
         scores[hid]["semantic"] = s
 
     # Neural hits provide 'score' and 'text'
@@ -115,7 +135,15 @@ def neuro_weighted_retrieval(query: str, alpha: float, beta: float, neural_embed
         neu = parts.get("neural", 0.0) or 0.0
         # simple linear weighting; allow alpha/beta to be zero to disable either branch
         c = (alpha * sem) + (beta * neu)
-        combined.append({"id": hid, "doc": parts.get("doc"), "semantic": sem, "neural": neu, "score": float(c)})
+        combined.append(
+            {
+                "id": hid,
+                "doc": parts.get("doc"),
+                "semantic": sem,
+                "neural": neu,
+                "score": float(c),
+            }
+        )
 
     combined.sort(key=lambda x: x["score"], reverse=True)
     return combined[:top_k]

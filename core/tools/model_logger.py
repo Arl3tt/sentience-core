@@ -14,6 +14,7 @@ import core.memory as memory
 HISTORY_FILE = os.path.join("data", "model_history.csv")
 FIELDNAMES = ["timestamp", "model_id", "accuracy", "params", "notes"]
 
+
 def ensure_history_file():
     """Ensure history CSV exists with headers"""
     if not os.path.exists(HISTORY_FILE):
@@ -21,6 +22,7 @@ def ensure_history_file():
         with open(HISTORY_FILE, "w", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=FIELDNAMES)
             writer.writeheader()
+
 
 def get_latest_metrics() -> Dict[str, float]:
     """Get the most recent metrics for each model type"""
@@ -35,7 +37,9 @@ def get_latest_metrics() -> Dict[str, float]:
                 latest[model_id] = accuracy
     except (FileNotFoundError, ValueError):
         pass
+
     return latest
+
 
 def log_training_result(result: Dict[str, Any]):
     """
@@ -86,5 +90,5 @@ def log_training_result(result: Dict[str, Any]):
     return {
         "prev_best": prev_best,
         "new_accuracy": accuracy,
-        "improved": accuracy > prev_best
+        "improved": accuracy > prev_best,
     }

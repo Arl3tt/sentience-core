@@ -6,22 +6,17 @@ Tests the full flow:
 2. Worker processing of jobs
 3. Sandbox execution and result storage
 """
-import os
-import json
-import time
-import uuid
-import signal
-import subprocess
-from typing import Generator, AsyncGenerator
 import asyncio
-from pathlib import Path
+import json
+import os
+import uuid
+from typing import AsyncGenerator
 
 import pytest
 import pytest_asyncio
 import redis
 
 from core import queue as core_queue
-from core.tools import sandbox_runner
 
 # Test config - override in env if needed
 TEST_REDIS_URL = os.getenv('TEST_REDIS_URL', 'redis://localhost:6379/1')
@@ -87,6 +82,7 @@ def queue_config(redis_conn):
     else:
         del os.environ['SANDBOX_USE_REDIS']
 
+
 @pytest_asyncio.fixture
 async def worker_process(queue_config) -> AsyncGenerator[object, None]:
     """Start a worker in a background thread for test duration (in-process)."""
@@ -102,7 +98,15 @@ async def worker_process(queue_config) -> AsyncGenerator[object, None]:
     except Exception:
         pass
 
-    t = threading.Thread(target=sandbox_worker.main, kwargs={'redis_url': TEST_REDIS_URL, 'sandbox_queue_name': TEST_QUEUE, 'stop_event': stop_event}, daemon=True)
+    t = threading.Thread(
+        target=sandbox_worker.main,
+        kwargs={
+            'redis_url': TEST_REDIS_URL,
+            'sandbox_queue_name': TEST_QUEUE,
+            'stop_event': stop_event,
+        },
+        daemon=True,
+    )
     t.start()
 
     try:
@@ -142,8 +146,10 @@ async def worker_process(queue_config) -> AsyncGenerator[object, None]:
 async def test_enqueue_and_process(redis_conn, queue_config, worker_process):
     """Test full flow: enqueue job -> worker processes -> check result."""
     # Enqueue a test job
-    job_id = core_queue.enqueue_job('python -c "print(\'test-output\')"',
-                                  metadata={'test_id': 'test1'})
+    job_id = core_queue.enqueue_job(
+        'python -c "print(\'test-output\')"',
+        metadata={'test_id': 'test1'},
+    )
 
     # Wait for result (up to 30s; Docker sandbox execution takes time)
     result = None

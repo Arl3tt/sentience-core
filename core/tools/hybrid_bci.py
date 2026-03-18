@@ -5,7 +5,7 @@ Integrates EEG, motor imagery, P300, and neurofeedback for robust BCI
 """
 
 import numpy as np
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List, Tuple
 from enum import Enum
 import time
 from collections import deque
@@ -292,7 +292,7 @@ class HybridBCI:
                 try:
                     paradigm = BCIParadigm[name.upper()]
                     weight = self.paradigm_weights.get(paradigm, 0.5)
-                except:
+                except Exception:
                     weight = 0.5
 
                 score = cmd.confidence * weight

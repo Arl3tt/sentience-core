@@ -34,7 +34,12 @@ def bandpower(eeg: np.ndarray, fs: float, band: tuple) -> float:
 
 
 class NeurofeedbackEngine:
-    def __init__(self, fs: float = 250.0, buffer_size: int = 1000, feedback_callback: Optional[Callable[[Dict[str, Any]], None]] = None):
+    def __init__(
+        self,
+        fs: float = 250.0,
+        buffer_size: int = 1000,
+        feedback_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
+    ):
         self.fs = fs
         self.buffer_size = buffer_size
         self.feedback_callback = feedback_callback
@@ -45,13 +50,21 @@ class NeurofeedbackEngine:
     def _compute_feedback(self):
         if not self._buffer:
             return {"alpha_ratio": 0.0, "beta_ratio": 0.0}
-        data = np.concatenate(self._buffer, axis=-1) if isinstance(self._buffer[0], np.ndarray) else np.array(self._buffer)
+
+        data = (
+            np.concatenate(self._buffer, axis=-1)
+            if isinstance(self._buffer[0], np.ndarray)
+            else np.array(self._buffer)
+        )
         if data.ndim > 1:
             data = np.mean(data, axis=0)
         a = bandpower(data, self.fs, (8, 13))
         b = bandpower(data, self.fs, (13, 30))
         total = a + b + 1e-9
-        return {"alpha_ratio": float(a / total), "beta_ratio": float(b / total)}
+        return {
+            "alpha_ratio": float(a / total),
+            "beta_ratio": float(b / total),
+        }
 
     def _loop(self, interval_s: float):
         while self._running:
@@ -83,12 +96,26 @@ class NeurofeedbackEngine:
         if len(self._buffer) > self.buffer_size:
             self._buffer.pop(0)
 
-    def create_neurofeedback_session(self, target: FeedbackTarget, modality: FeedbackModality, session_duration: float = 600.0) -> Dict[str, Any]:
+    def create_neurofeedback_session(
+        self,
+        target: FeedbackTarget,
+        modality: FeedbackModality,
+        session_duration: float = 600.0,
+    ) -> Dict[str, Any]:
         # return a small session descriptor
-        return {"session_id": f"nf_{int(time.time())}", "target": target.value, "modality": modality.value, "duration_s": session_duration}
+        return {
+            "session_id": f"nf_{int(time.time())}",
+            "target": target.value,
+            "modality": modality.value,
+            "duration_s": session_duration,
+        }
 
 
-def create_neurofeedback_session(target: FeedbackTarget, modality: FeedbackModality, session_duration: float = 600.0) -> Tuple[NeurofeedbackEngine, Dict[str, Any]]:
+def create_neurofeedback_session(
+    target: FeedbackTarget,
+    modality: FeedbackModality,
+    session_duration: float = 600.0,
+) -> Tuple[NeurofeedbackEngine, Dict[str, Any]]:
     engine = NeurofeedbackEngine()
     session = engine.create_neurofeedback_session(target, modality, session_duration)
     return engine, session

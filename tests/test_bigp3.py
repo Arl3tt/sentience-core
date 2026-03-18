@@ -1,4 +1,7 @@
+import numpy as np
+
 from core.tools.bigp3bci import load_bigp3_record, preprocess_bigp3, create_bigp3_interface
+
 
 def test_load_npz(tmp_bigp3_npz):
     data = load_bigp3_record(tmp_bigp3_npz)

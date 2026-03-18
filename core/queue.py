@@ -10,17 +10,15 @@ API:
 
 """
 import json
-import os
 import hmac
 import hashlib
 import uuid
 import time
 import logging
-from typing import Optional, List, Any, Dict, Tuple, Union, cast
+from typing import Any, Dict, Optional, Tuple, cast
 
 import redis
 from redis.client import Redis
-from redis.typing import KeyT
 
 from config import REDIS_URL, REDIS_PASSWORD, SANDBOX_QUEUE_NAME, SANDBOX_SECRET_KEY
 
@@ -52,8 +50,12 @@ def _get_redis():
             except Exception as e:
                 last_error = e
                 if attempt < retries - 1:
-                    logging.warning("Redis connection attempt %d failed: %s. Retrying in %.1f seconds...",
-                                 attempt + 1, str(e), retry_delay)
+                    logging.warning(
+                        "Redis connection attempt %d failed: %s. Retrying in %.1f seconds...",
+                        attempt + 1,
+                        str(e),
+                        retry_delay,
+                    )
                     time.sleep(retry_delay)
                     retry_delay *= 2
                 else:
@@ -102,7 +104,10 @@ def pop_job(block: bool = True, timeout: int = 0) -> Optional[dict]:
         if block:
             try:
                 # Explicitly handle the Redis response format and typing
-                response: Optional[Tuple[bytes, bytes]] = cast(Optional[Tuple[bytes, bytes]], r.brpop([SANDBOX_QUEUE_NAME], timeout=timeout))
+                response: Optional[Tuple[bytes, bytes]] = cast(
+                    Optional[Tuple[bytes, bytes]],
+                    r.brpop([SANDBOX_QUEUE_NAME], timeout=timeout),
+                )
                 if not response:
                     logging.debug("No job available after blocking")
                     return None

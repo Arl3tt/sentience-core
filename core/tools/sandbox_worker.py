@@ -37,7 +37,11 @@ def main(redis_url: str | None = None, sandbox_queue_name: str | None = None, st
         # worker actually started in-process and which Redis instance it will use.
         try:
             with open('queue_debug.log', 'a', encoding='utf-8') as dbg:
-                dbg.write(f'WORKER START pid={os.getpid()} REDIS_URL={os.environ.get("REDIS_URL")} QUEUE={os.environ.get("SANDBOX_QUEUE_NAME")}\n')
+                dbg.write(
+                    f"WORKER START pid={os.getpid()} "
+                    f"REDIS_URL={os.environ.get('REDIS_URL')} "
+                    f"QUEUE={os.environ.get('SANDBOX_QUEUE_NAME')}\n"
+                )
         except Exception:
             pass
 
@@ -49,7 +53,10 @@ def main(redis_url: str | None = None, sandbox_queue_name: str | None = None, st
             logging.debug("Polling queue...")
             try:
                 with open('queue_debug.log', 'a', encoding='utf-8') as dbg:
-                    dbg.write(f'WORKER POLL pid={os.getpid()} -> queue_store: {getattr(queue._get_redis(), "_store", None)}\n')
+                    dbg.write(
+                        f"WORKER POLL pid={os.getpid()} -> "
+                        f"queue_store: {getattr(queue._get_redis(), '_store', None)}\n"
+                    )
             except Exception:
                 pass
             try:
