@@ -3,8 +3,6 @@ from datetime import datetime
 import uvicorn
 from fastapi import FastAPI, Form, UploadFile, File, WebSocket
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 from config import HOST, PORT
 from core.memory import ingest_document, semantic_search, add_episode
 from core.brain import GOAL_QUEUE
@@ -99,7 +97,7 @@ INDEX = '''<!doctype html>
 <body>
     <h1>Sentience Core</h1>
     <div id="connection-status"></div>
-    
+
     <div id="status" style="display: none;">
         <h3>Current Status</h3>
         <div id="status-text"></div>
@@ -112,7 +110,7 @@ INDEX = '''<!doctype html>
         <h3>Task Progress</h3>
         <ul class="task-list" id="task-list"></ul>
     </div>
-    
+
     <div class="card">
         <h3>Submit Goal</h3>
         <form id="goal-form" onsubmit="submitGoal(event)">
@@ -128,13 +126,13 @@ INDEX = '''<!doctype html>
             <input type="file" name="file"/>
             <input type="submit" value="Ingest"/>
         </form>
-        
+
         <form action="/search" method="post">
             <input type="text" name="q" style="width:400px" placeholder="Search documents..."/>
             <input type="submit" value="Search"/>
         </form>
     </div>
-    
+
     <p class="info-text">
         This UI provides real-time task execution monitoring with WebSocket-based progress updates.
         Use the console for advanced agent control.
@@ -153,7 +151,7 @@ INDEX = '''<!doctype html>
         function updateTaskList(tasks) {
             const taskList = document.getElementById('task-list');
             const taskContainer = document.getElementById('task-container');
-            
+
             if (tasks && tasks.length > 0) {
                 taskContainer.style.display = 'block';
                 taskList.innerHTML = tasks.map(task => {
@@ -176,35 +174,35 @@ INDEX = '''<!doctype html>
             const status = document.getElementById('status');
             const statusText = document.getElementById('status-text');
             const progress = document.getElementById('progress');
-            
+
             // Reset UI state
             taskMap.clear();
             status.style.display = 'block';
             document.getElementById('task-container').style.display = 'none';
             submitBtn.disabled = true;
             loading.style.display = 'inline-block';
-            
+
             if (socket) {
                 socket.close();
             }
-            
+
             socket = new WebSocket(`ws://${window.location.host}/ws`);
-            
+
             socket.onopen = function() {
                 updateConnectionStatus(true);
                 socket.send(input.value);
             };
-            
+
             socket.onmessage = function(event) {
                 try {
                     const data = JSON.parse(event.data);
-                    
+
                     // Update status and progress
                     statusText.textContent = data.status || 'Processing...';
                     if (data.progress !== undefined) {
                         progress.style.width = `${data.progress * 100}%`;
                     }
-                    
+
                     // Handle task updates
                     if (data.current_task) {
                         taskMap.set(data.current_task.id, 'completed');
@@ -212,25 +210,25 @@ INDEX = '''<!doctype html>
                     if (data.tasks) {
                         updateTaskList(data.tasks);
                     }
-                    
+
                     // Handle errors
                     if (data.error) {
                         status.classList.add('error');
                         statusText.textContent = `Error: ${data.error}`;
                     }
-                    
+
                 } catch (e) {
                     console.error('Failed to parse message:', e);
                     status.classList.add('error');
                     statusText.textContent = 'Error: Failed to parse server message';
                 }
             };
-            
+
             socket.onclose = function() {
                 updateConnectionStatus(false);
                 submitBtn.disabled = false;
                 loading.style.display = 'none';
-                
+
                 setTimeout(() => {
                     if (status.classList.contains('error')) {
                         return; // Keep error message visible
@@ -239,7 +237,7 @@ INDEX = '''<!doctype html>
                     status.classList.remove('error');
                 }, 3000);
             };
-            
+
             socket.onerror = function(error) {
                 console.error('WebSocket error:', error);
                 status.classList.add('error');
@@ -257,9 +255,11 @@ INDEX = '''<!doctype html>
 
 planner = LangGraphPlanner()
 
+
 @app.get('/', response_class=HTMLResponse)
 def index():
     return INDEX
+
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
