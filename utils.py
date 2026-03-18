@@ -3,7 +3,10 @@
 """
 Utility functions for timestamp formatting and pretty printing
 """
+
+
 import json, time
+
 
 def now_ts():
     return time.strftime('%Y-%m-%d %H:%M:%S')
@@ -13,3 +16,4 @@ def pretty(obj):
         print(json.dumps(obj, indent=2, ensure_ascii=False))
     except:
         print(obj)
+

@@ -366,5 +366,6 @@ async def training_history():
     '''
     return html
 
+
 def run_server():
     uvicorn.run(app, host=HOST, port=PORT, log_level='info')
