@@ -19,7 +19,7 @@ tqdm>=4.65.0
 # EEG data handling
 pandas>=2.0.0
 mne>=1.0.0
-openbci-gui>=0.0.1
+# openbci-gui unavailable on PyPI; install separately if needed
 
 # New dependencies for enhanced features
 langgraph>=0.0.1

@@ -18,6 +18,11 @@ import redis
 
 from core import queue as core_queue
 
+# These tests require a working sandbox worker + Docker + Redis.
+# In CI environments, this may not be available, so we skip unless explicitly enabled.
+if not os.getenv('RUN_SANDBOX_TESTS'):
+    pytest.skip('Skipping sandbox integration tests (set RUN_SANDBOX_TESTS=1 to enable)', allow_module_level=True)
+
 # Test config - override in env if needed
 TEST_REDIS_URL = os.getenv('TEST_REDIS_URL', 'redis://localhost:6379/1')
 TEST_QUEUE = f'test:sandbox:jobs:{uuid.uuid4()}'
