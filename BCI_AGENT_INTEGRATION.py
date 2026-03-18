@@ -5,8 +5,11 @@ This example shows how to integrate the new BCI tools with your existing agent s
 Add these to your core/agents.py or create separate tool handlers.
 """
 
+import numpy as np
+
 # Example 1: Integrate into Executor Agent
 # ==========================================
+
 
 def execute_bci_analysis_task(task_description: str, eeg_data: np.ndarray, fs: float = 250):
     """
