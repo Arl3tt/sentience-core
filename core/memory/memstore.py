@@ -75,6 +75,7 @@ def ingest_document(doc_id, text, metadata=None):
         conn.commit()
         return {'status': 'ok', 'id': cur.lastrowid}
 
+
 def semantic_search(query, top_k=5):
     qv = MODEL.encode(query)
     if USE_CHROMA and collection:

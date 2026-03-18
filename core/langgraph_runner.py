@@ -135,7 +135,7 @@ class SentienceWorkflow:
 
     def _build_graph(self) -> StateGraph:
         """Construct LangGraph workflow"""
-        from typing import TypedDict, Annotated
+        from typing import TypedDict
 
         class AgentState(TypedDict):
             agent: str
@@ -303,7 +303,7 @@ class SentienceWorkflow:
             pass
 
         prompt += "\nCurrent inputs:\n"
-        for k,v in inputs.items():
+        for k, v in inputs.items():
             prompt += f"{k}: {str(v)[:200]}...\n"
 
         prompt += f"\nAs the {agent_name}, what actions should be taken? Respond in a clear, structured format."
