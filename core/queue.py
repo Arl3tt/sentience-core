@@ -34,7 +34,7 @@ def _get_redis():
         retries = 3
         retry_delay = 1.0
         last_error = None
-        
+
         logging.info("Initializing Redis connection")
         for attempt in range(retries):
             try:
@@ -43,16 +43,16 @@ def _get_redis():
                     _redis = redis.Redis.from_url(REDIS_URL, password=REDIS_PASSWORD, decode_responses=True)
                 else:
                     _redis = redis.Redis(decode_responses=True)
-                    
+
                 # Test the connection
                 _redis.ping()
                 logging.info("Successfully connected to Redis")
                 break
-                
+
             except Exception as e:
                 last_error = e
                 if attempt < retries - 1:
-                    logging.warning("Redis connection attempt %d failed: %s. Retrying in %.1f seconds...", 
+                    logging.warning("Redis connection attempt %d failed: %s. Retrying in %.1f seconds...",
                                  attempt + 1, str(e), retry_delay)
                     time.sleep(retry_delay)
                     retry_delay *= 2
@@ -97,7 +97,7 @@ def pop_job(block: bool = True, timeout: int = 0) -> Optional[dict]:
     if r is None:
         logging.error("Redis connection not available")
         return None
-    
+
     try:
         if block:
             try:
@@ -123,20 +123,20 @@ def pop_job(block: bool = True, timeout: int = 0) -> Optional[dict]:
         obj: Dict[str, Any] = json.loads(item)
         payload_json = obj.get('payload')
         sig = obj.get('sig')
-        
+
         if not payload_json or not sig:
             logging.warning("Invalid job format: missing payload or signature")
             return None
-            
+
         expected = _sign(payload_json)
         if not hmac.compare_digest(expected, sig):
             logging.warning("Invalid job signature")
             return None
-            
+
         payload = json.loads(payload_json)
         logging.info("Successfully popped job %s", payload.get('id'))
         return payload
-        
+
     except Exception as e:
         logging.error("Error popping job: %s", str(e))
         return None

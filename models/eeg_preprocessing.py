@@ -160,15 +160,15 @@ def compute_psd(signals: np.ndarray, fs: float) -> tuple[np.ndarray, np.ndarray]
     nperseg = min(256, signals.shape[0])  # Adjust segment size based on signal length
     if signals.ndim == 1:
         signals = signals.reshape(-1, 1)
-    
+
     freqs = []
     psd_list = []
-    
+
     for ch in range(signals.shape[1]):
         f, p = welch(signals[:, ch], fs, nperseg=nperseg)
         freqs.append(f)
         psd_list.append(p)
-    
+
     # All frequencies should be the same for each channel
     freqs = freqs[0]
     psd = np.stack(psd_list, axis=-1)
@@ -176,7 +176,7 @@ def compute_psd(signals: np.ndarray, fs: float) -> tuple[np.ndarray, np.ndarray]
 
 def spectral_entropy(psd: np.ndarray) -> np.ndarray:
     """Compute spectral entropy from PSD
-    
+
     Higher values indicate more complex/chaotic signals
     Lower values suggest more regular/predictable patterns
     """
@@ -209,7 +209,7 @@ def normalize_signal(data: np.ndarray) -> np.ndarray:
 
 def compute_band_ratios(psd: np.ndarray, freqs: np.ndarray) -> dict:
     """Compute clinically relevant band ratios
-    
+
     Returns:
         dict: Contains ratios like alpha/beta, theta/beta
         These ratios are used in ADHD research and neurofeedback
@@ -223,12 +223,12 @@ def compute_band_ratios(psd: np.ndarray, freqs: np.ndarray) -> dict:
             if band_psd.ndim == 1:
                 band_psd = band_psd.reshape(-1, 1)
         return np.mean(band_psd, axis=0)
-    
+
     # Add small constant to avoid division by zero
     alpha = get_band_power(8, 12) + 1e-10
     beta = get_band_power(12, 30) + 1e-10
     theta = get_band_power(4, 8) + 1e-10
-    
+
     # Convert to float for single channel or list for multiple channels
     if isinstance(alpha, np.ndarray):
         ratios = {
@@ -246,12 +246,12 @@ def compute_band_ratios(psd: np.ndarray, freqs: np.ndarray) -> dict:
 
 def compute_stft(signal: np.ndarray, fs: float, window: int | None = None) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Compute Short-Time Fourier Transform
-    
+
     Args:
         signal: EEG signal
         fs: Sampling frequency
         window: Window size for STFT. If None, will be automatically calculated.
-        
+
     Returns:
         tuple: (frequencies, times, Zxx)
         - frequencies: Frequency points
@@ -263,47 +263,47 @@ def compute_stft(signal: np.ndarray, fs: float, window: int | None = None) -> tu
         window = min(256, signal.shape[0] // 4)
         # Ensure window is even
         window = window if window % 2 == 0 else window - 1
-        
+
     # Ensure window is not larger than signal
     window = min(window, signal.shape[0])
-    
+
     if signal.ndim == 1:
         signal = signal.reshape(-1, 1)
-    
+
     freqs_list = []
     times_list = []
     Zxx_list = []
-    
+
     # Process each channel
     for ch in range(signal.shape[1]):
         f, t, Z = stft(signal[:, ch], fs=fs, nperseg=window)
         freqs_list.append(f)
         times_list.append(t)
         Zxx_list.append(np.abs(Z))
-    
+
     # All frequencies and times should be the same for each channel
     freqs = freqs_list[0]
     times = times_list[0]
     # Stack spectrograms along the last axis
     Zxx = np.stack(Zxx_list, axis=-1)
-    
+
     return freqs, times, Zxx
 
 class FeatureHistory:
     """Maintains a rolling window of brain state features"""
-    
+
     def __init__(self, window_size: int = 10):
         """Initialize feature history
-        
+
         Args:
             window_size: Number of time points to keep in history
         """
         self.window_size = window_size
         self.history = {}
-        
+
     def update(self, features: dict) -> None:
         """Add new features to history
-        
+
         Args:
             features: Dictionary of new features to add
         """
@@ -312,14 +312,14 @@ class FeatureHistory:
                 self.history[name] = deque(maxlen=self.window_size)
             # Skip complex features like PSD and time-frequency data
             if isinstance(value, (float, int)) or (
-                isinstance(value, (list, np.ndarray)) and 
+                isinstance(value, (list, np.ndarray)) and
                 np.array(value).ndim == 1
             ):
                 self.history[name].append(value)
-    
+
     def get_trends(self) -> dict:
         """Compute trends in feature history
-        
+
         Returns:
             dict: Contains trend metrics for each feature
         """
@@ -335,7 +335,7 @@ class FeatureHistory:
                     elif values_array.ndim == 2:
                         # Compute trend for each channel
                         x = np.arange(values_array.shape[0])
-                        slopes = [np.polyfit(x, values_array[:, i], deg=1)[0] 
+                        slopes = [np.polyfit(x, values_array[:, i], deg=1)[0]
                                 for i in range(values_array.shape[1])]
                         trends[f"{name}_trend"] = [float(s) for s in slopes]
                 except (ValueError, np.linalg.LinAlgError):
@@ -345,12 +345,12 @@ class FeatureHistory:
 
 def preprocess_eeg(eeg: np.ndarray, fs: float, feature_history: FeatureHistory | None = None) -> tuple[np.ndarray, dict]:
     """Full preprocessing pipeline
-    
+
     Args:
         eeg: Raw EEG signal
         fs: Sampling frequency
         feature_history: Optional FeatureHistory object for temporal tracking
-        
+
     Returns:
         tuple: (preprocessed_eeg, features)
         - preprocessed_eeg: Cleaned and filtered EEG signal
@@ -358,48 +358,48 @@ def preprocess_eeg(eeg: np.ndarray, fs: float, feature_history: FeatureHistory |
     """
     # 1. Remove large artifacts
     clean = remove_artifacts(eeg)
-    
+
     # 2. Apply notch filter (remove power line noise)
     clean = notch_filter(clean, fs)
-    
+
     # 3. Normalize signal
     clean = normalize_signal(clean)
-    
+
     # 4. Apply bandpass filter
     filtered = bandpass_filter(clean, 1, 80, fs)
-    
+
     # 5. Try to apply ICA for advanced artifact removal
     try:
         clean_ica = remove_artifacts_ica(filtered)
     except (ValueError, np.linalg.LinAlgError):
         # If ICA fails, use filtered data directly
         clean_ica = filtered
-    
+
     # Extract features
     features = {}
-    
+
     # Band power features
     band_power = extract_band_power(clean_ica, fs)
     features.update(band_power)
-    
+
     # PSD features
     freqs, psd = compute_psd(clean_ica, fs)
     features['psd'] = psd.tolist()
     features['psd_freqs'] = freqs.tolist()
-    
+
     # Complexity measures
     features['spectral_entropy'] = spectral_entropy(psd).tolist()
-    
+
     # Band ratios (ADHD biomarkers)
     ratios = compute_band_ratios(psd, freqs)
     features.update(ratios)
-    
+
     # Time-frequency analysis
     tf_freqs, tf_times, tf_data = compute_stft(clean_ica, fs)
     features['tf_data'] = tf_data.tolist()
     features['tf_freqs'] = tf_freqs.tolist()
     features['tf_times'] = tf_times.tolist()
-    
+
     # Update feature history if provided
     if feature_history is not None:
         feature_history.update(features)

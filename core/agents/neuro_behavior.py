@@ -5,7 +5,6 @@ system prompts based on selected policy, and performing a hybrid retrieval that
 weights semantic search and neural similarity.
 """
 from typing import List, Dict, Any
-import math
 import logging
 
 log = logging.getLogger("neuro_behavior")

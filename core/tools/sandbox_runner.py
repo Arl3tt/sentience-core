@@ -9,17 +9,17 @@ import subprocess
 from typing import Dict, Any, Optional
 import json
 
-def run_in_sandbox(command: str, 
+def run_in_sandbox(command: str,
                   timeout: int = 30,
                   env: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
     """
     Run a command in the sandbox container
-    
+
     Args:
         command: The command to execute
         timeout: Maximum execution time in seconds
         env: Optional environment variables
-        
+
     Returns:
         Dict containing status, output, and error info
     """
@@ -52,7 +52,7 @@ def run_in_sandbox(command: str,
             }
         except Exception as e:
             return {"status": "error", "output": "", "error": str(e), "code": -1}
-        
+
     # Prepare the docker-compose command
     # __file__ is core/tools/sandbox_runner.py, go up to project root
     compose_file = os.path.join(
@@ -60,7 +60,7 @@ def run_in_sandbox(command: str,
         "docker",
         "docker-compose.yml"
     )
-    
+
     # Build the container if needed
     try:
         subprocess.run(
@@ -94,12 +94,12 @@ def run_in_sandbox(command: str,
             }
         except Exception as e:
             return {"status": "error", "output": "", "error": str(e), "code": -1}
-    
+
     # Prepare environment
     run_env = os.environ.copy()
     if env:
         run_env.update(env)
-    
+
     try:
         # Run the command
         result = subprocess.run(
@@ -116,16 +116,16 @@ def run_in_sandbox(command: str,
             timeout=timeout,
             env=run_env
         )
-        
+
         status = "success" if result.returncode == 0 else "error"
-        
+
         return {
             "status": status,
             "output": result.stdout,
             "error": result.stderr,
             "code": result.returncode
         }
-        
+
     except subprocess.TimeoutExpired:
         return {
             "status": "timeout",

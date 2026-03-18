@@ -81,23 +81,23 @@ class AgentContext:
     allowed_actions: List[str] = field(default_factory=list)
     max_retries: int = 3
     retry_delay: float = 1.0
-    
+
     def get_context(self, query: str) -> List[Dict[str, Any]]:
         """Retrieve relevant context from memory"""
         self.last_memory_query = query
         return semantic_search(query, top_k=self.memory_k)
-    
+
     def store_result(self, content: str, metadata: Dict[str, Any]) -> None:
         """Store agent outputs in memory"""
         store_memory(content, metadata)
-        
+
     def add_message(self, message: BaseMessage) -> None:
         """Add message to chat history"""
         self.chat_history.append(message)
 
 class SentienceWorkflow:
     """Main workflow orchestrator using LangGraph"""
-    
+
     def __init__(self, workflow_path: Optional[Union[str, Path]] = None):
         """Initialize workflow from YAML config"""
         if not workflow_path:
@@ -114,11 +114,11 @@ class SentienceWorkflow:
 
         with open(workflow_path, 'r', encoding='utf-8') as f:
             self.config: Dict[str, Any] = yaml.safe_load(f)
-            
+
         self.agents: Dict[str, AgentContext] = {}
         self._init_agents()
         self.graph = self._build_graph()
-        
+
     def _init_agents(self):
         """Initialize agent contexts from config"""
         for name, cfg in self.config["nodes"].items():
@@ -126,42 +126,42 @@ class SentienceWorkflow:
                 name=name,
                 memory_k=cfg["config"].get("memory_query_k", 4)
             )
-            
+
     def _build_graph(self) -> StateGraph:
         """Construct LangGraph workflow"""
         from typing import TypedDict, Annotated
-        
+
         class AgentState(TypedDict):
             agent: str
             result: str
             inputs: dict
-            
+
         # Create the graph with state schema
         workflow = StateGraph(state_schema=AgentState)
-        
+
         # Add agent nodes
         for name, agent in self.agents.items():
             workflow.add_node(name, self._create_agent_node(name, agent))
-            
+
         # Add edges
         for edge in self.config["edges"]:
             workflow.add_edge(edge["from"], edge["to"])
-            
+
         # Set entry/exit
         workflow.set_entry_point(self.config["entry_point"])
         workflow.add_edge(self.config["exit_point"], END)
-            
+
         return workflow.compile()
-    
+
     def _create_agent_node(self, name: str, context: AgentContext):
         """Create an agent node with memory context integration"""
-        
+
         def agent_fn(state):
             # Get relevant context from state
             query = state.get("query", "")
             if not query and "task" in state:
                 query = state["task"].get("desc", state["task"].get("title", ""))
-                
+
             # inject recent neural context (Mode A)
             try:
                 neural_ctx = get_recent_neural_context()
@@ -172,13 +172,13 @@ class SentienceWorkflow:
                 state = {**state, "neural": neural_ctx}
 
             context_hits = context.get_context(query)
-            
+
             # Build prompt with context
             prompt = self._build_prompt(name, context_hits, state)
-            
+
             # Call agent
             result = call_llm(prompt)
-            
+
             # Store result
             context.store_result(
                 result,
@@ -195,7 +195,7 @@ class SentienceWorkflow:
                         store_memory(f"neuro.policy:{policy_decision.get('action')}", {"policy": policy_decision})
                     except Exception:
                         pass
-                        
+
                     # Update agent context based on policy
                     action = policy_decision.get('action', 'neutral')
                     if action == 'protect_flow':
@@ -212,9 +212,9 @@ class SentienceWorkflow:
                         context.max_retries = 3
                         context.retry_delay = 1.0
                         context.allowed_actions = []  # no restrictions
-                    
+
                     # Attach policy decision to returned state
-                    result_state = {**state, "agent": name, "result": result, 
+                    result_state = {**state, "agent": name, "result": result,
                                   "neuro_policy": policy_decision,
                                   "agent_context": {
                                       "verbosity": context.verbosity,
@@ -227,25 +227,25 @@ class SentienceWorkflow:
             except Exception as e:
                 log.warning(f"Policy update failed: {str(e)}")
                 result_state = {**state, "agent": name, "result": result}
-            
+
             # Update conversation history
             context.add_message(HumanMessage(content=prompt))
             context.add_message(AIMessage(content=result))
 
             # Return the new state (may include neuro_policy decision)
             return result_state
-            
+
         return agent_fn
-    
+
     def _build_prompt(self, agent_name: str, context_hits: List[Dict], inputs: Dict) -> str:
         """Build agent prompt with memory context"""
         prompt = f"\nYou are the {agent_name} agent. "
-        
+
         if context_hits:
             prompt += "\nRelevant context:\n"
             for hit in context_hits:
                 prompt += f"- {hit['text'][:200]}...\n"
-                
+
         # Include neural summary if present in inputs
         neural = inputs.get("neural") if isinstance(inputs, dict) else None
         if neural:
@@ -299,19 +299,19 @@ class SentienceWorkflow:
         prompt += "\nCurrent inputs:\n"
         for k,v in inputs.items():
             prompt += f"{k}: {str(v)[:200]}...\n"
-            
+
         prompt += f"\nAs the {agent_name}, what actions should be taken? Respond in a clear, structured format."
         return prompt
-    
+
     def run(self, goal: str, config: Optional[Dict] = None) -> Dict[str, Any]:
         """Run the full workflow"""
         config = config or {}
-        
+
         try:
             # Store the initial goal
-            store_memory(f"New workflow run started with goal: {goal}", 
+            store_memory(f"New workflow run started with goal: {goal}",
                         {"kind": "workflow.start", "goal": goal})
-            
+
             # Execute graph with initial state
             initial_state = {
                 "agent": "start",
@@ -322,15 +322,15 @@ class SentienceWorkflow:
                 initial_state,
                 config=config
             )
-            
+
             # Store final result
             store_memory(f"Workflow completed. Final result: {str(result)[:200]}",
                         {"kind": "workflow.complete", "goal": goal})
-            
+
             return result
-            
+
         except Exception as e:
             log.exception("Workflow error")
-            store_memory(f"Workflow error: {str(e)}", 
+            store_memory(f"Workflow error: {str(e)}",
                         {"kind": "workflow.error", "goal": goal})
             raise

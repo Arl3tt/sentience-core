@@ -89,7 +89,7 @@ def extract_features(X, sfreq):
 
 def run_training(X, y, sfreq, params=None):
     start = time.time()
-    
+
     # Save a tiny sample dataset for inspection (100 samples)
     sample_idx = np.arange(min(100, X.shape[0]))
     np.savez_compressed(os.path.join(OUT_DIR, "sim_eeg_sample.npz"),
@@ -124,7 +124,7 @@ def run_training(X, y, sfreq, params=None):
         "timestamp": time.time(),
         "notes": "Synthetic EEG toy model (alpha vs beta simulation)."
     }
-    
+
     # Save metadata
     with open(os.path.join(MODEL_DIR, "sim_eeg_meta.json"), "w", encoding="utf-8") as f:
         json.dump(meta, f, indent=2)
@@ -134,7 +134,7 @@ def run_training(X, y, sfreq, params=None):
     result = log_training_result(meta)
 
     elapsed = time.time() - start
-    
+
     # Print machine-parseable summary for the Executor/Critic
     summary = {
         "status": "ok",
@@ -147,7 +147,7 @@ def run_training(X, y, sfreq, params=None):
         "prev_best": result["prev_best"]
     }
     print(json.dumps(summary))
-    
+
     # Print human friendly output
     print("\n=== Training complete ===")
     print(f"Accuracy: {acc:.3f}")
@@ -155,7 +155,7 @@ def run_training(X, y, sfreq, params=None):
     print(f"Elapsed (s): {elapsed:.2f}")
     if result["improved"]:
         print(f"Improved by: {acc - result['prev_best']:.3f}")
-    
+
     return summary
 
 def parse_args():
@@ -176,6 +176,6 @@ if __name__ == "__main__":
         "duration_s": args.duration_s,
         "sfreq": args.sfreq
     }
-    
+
     X, y, sfreq = simulate_eeg(**params)
     run_training(X, y, sfreq, params=params)

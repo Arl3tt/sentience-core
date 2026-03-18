@@ -46,7 +46,7 @@ def test_ingest_pdf():
         mock_page = MagicMock()
         mock_page.extract_text.return_value = "PDF page text"
         mock_pdf_reader.return_value.pages = [mock_page]
-        
+
         with patch("core.tools.ingest.ingest_document") as mock_ingest:
             mock_ingest.return_value = {"doc_id": "pdf.pdf", "status": "ok"}
             result = ingest_pdf("pdf.pdf")

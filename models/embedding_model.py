@@ -64,7 +64,7 @@ def load_autoencoder(model_path: str | None = None) -> Optional[Any]:
     """Load the trained autoencoder model if available."""
     if torch is None:
         return None
-        
+
     if model_path is None:
         model_path = os.path.join(os.path.dirname(__file__), 'autoencoder.pth')
     if not os.path.exists(model_path):
@@ -78,17 +78,17 @@ def load_autoencoder(model_path: str | None = None) -> Optional[Any]:
         return None
 
 
-def compute_embedding(features: Dict[str, Any], dim: int = 32, 
+def compute_embedding(features: Dict[str, Any], dim: int = 32,
                      save_path: Optional[str] = None,
                      model_path: Optional[str] = None) -> np.ndarray:
     """Compute embedding vector from features using trained autoencoder.
-    
+
     If the autoencoder model is not available or fails to load, falls back
     to random projection.
     """
     vec = _vectorize_features(features)
     orig_dim = vec.shape[0]
-    
+
     if orig_dim <= 0:
         # handle empty features
         emb = np.zeros((dim,), dtype=float)
@@ -108,7 +108,7 @@ def compute_embedding(features: Dict[str, Any], dim: int = 32,
             except Exception:
                 # fall back to random projection on any error
                 model = None
-                
+
         if model is None:
             # fallback: deterministic random projection
             rng = np.random.RandomState(123456)

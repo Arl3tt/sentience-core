@@ -19,7 +19,7 @@ paths = [
 ]
 for p in paths:
     print(f"- {os.path.abspath(p)}: {os.path.exists(p)}")
-    
+
 print("\nTrying prediction...")
 tags = predict_tags(features)
 print("Predicted tags:", tags)

@@ -137,7 +137,7 @@ def save_neural_session(session_meta: Dict[str, Any], features: Dict[str, Any], 
             # Store predictions in both meta and features
             meta.setdefault('predicted_tags', preds)
             features['predicted_tags'] = preds
-            
+
             # Update both files
             try:
                 with open(meta_path, 'w', encoding='utf-8') as f:

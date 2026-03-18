@@ -22,7 +22,7 @@ def enqueue_training_task():
             "args": {"cmd": "python core/tools/train_sim_eeg.py"}
         }
     }
-    
+
     # Place directly in EXEC_QUEUE - will be picked up by Executor
     EXEC_QUEUE.put(item)
     print("Enqueued training task; Executor will pick it up automatically.")

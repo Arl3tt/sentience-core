@@ -9,13 +9,13 @@ import sys
 import importlib
 
 if 'core.agents' in sys.modules:
-	m = sys.modules['core.agents']
-	if not hasattr(m, '__path__'):
-		# remove stale module so package import can succeed
-		del sys.modules['core.agents']
+    m = sys.modules['core.agents']
+    if not hasattr(m, '__path__'):
+        # remove stale module so package import can succeed
+        del sys.modules['core.agents']
 
 try:
-	importlib.import_module('core.agents')
+    importlib.import_module('core.agents')
 except Exception:
-	# best-effort import; if it fails, tests will report the underlying issue
-	pass
+    # best-effort import; if it fails, tests will report the underlying issue
+    pass

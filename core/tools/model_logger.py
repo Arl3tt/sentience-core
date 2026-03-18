@@ -43,17 +43,17 @@ def log_training_result(result: Dict[str, Any]):
     Announces improvements via TTS
     """
     ensure_history_file()
-    
+
     # Parse the training result
     model_id = result.get("model_id", "unknown")
     accuracy = float(result.get("accuracy", 0))
     params = json.dumps(result.get("params", {}))
     notes = result.get("notes", "")
-    
+
     # Get previous best accuracy
     latest_metrics = get_latest_metrics()
     prev_best = latest_metrics.get(model_id, 0)
-    
+
     # Log to CSV
     row = {
         "timestamp": datetime.now().isoformat(),
@@ -65,7 +65,7 @@ def log_training_result(result: Dict[str, Any]):
     with open(HISTORY_FILE, "a", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=FIELDNAMES)
         writer.writerow(row)
-    
+
     # Log to episodes
     episode_text = f"Training completed for {model_id}. Accuracy: {accuracy:.3f}"
     if accuracy > prev_best:
@@ -82,7 +82,7 @@ def log_training_result(result: Dict[str, Any]):
         memory.add_episode("model_training", episode_text)
     except Exception:
         pass
-    
+
     return {
         "prev_best": prev_best,
         "new_accuracy": accuracy,

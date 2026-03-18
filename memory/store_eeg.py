@@ -29,7 +29,7 @@ class EEGMemoryController:
                 "features": features.tolist()  # numeric embedding
             }
         )
-        
+
     def search_eeg_records(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
         """Search for EEG records using text query"""
         results = semantic_search(query, top_k=top_k)
@@ -44,13 +44,13 @@ class EEGMemoryController:
 # Example usage
 if __name__ == "__main__":
     from data.import_openbci_csv import load_openbci_csv
-    
+
     mc = EEGMemoryController()
-    
+
     # Load and store example
     eeg = load_openbci_csv("data/raw/openbci_sample.csv")
     mc.store_eeg_record(eeg, source="OpenBCI-Test")
-    
+
     # Search examples
     print("\nText search:")
     results = mc.search_eeg_records("OpenBCI recordings with high sample rate")

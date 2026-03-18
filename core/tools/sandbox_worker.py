@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(mess
 
 
 def main(redis_url: str | None = None, sandbox_queue_name: str | None = None, stop_event=None):
-    # Log configuration 
+    # Log configuration
     logging.info("Starting sandbox worker with config:")
     logging.info("  REDIS_URL: %s", os.environ.get('REDIS_URL'))
     logging.info("  SANDBOX_QUEUE_NAME: %s", os.environ.get('SANDBOX_QUEUE_NAME'))
@@ -82,7 +82,7 @@ def main(redis_url: str | None = None, sandbox_queue_name: str | None = None, st
             if not isinstance(command, str):
                 logging.error("Invalid command for job %s: %s", job_id, command)
                 continue
-                
+
             metadata = job.get('metadata', {})
             logging.info("Got job %s: %s", job_id, command)
 

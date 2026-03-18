@@ -57,13 +57,13 @@ __all__ = [
 "classify_brainwave_bands",
 "classify_cognitive_state",
 "classify_multi_channel",
-    
+
 # Motor Imagery CNN
 "MotorImageryNet",
 "classify_motor_imagery",
 "extract_motor_imagery_features",
 "train_motor_imagery_model",
-    
+
 # P300 Speller
 "P300Speller",
 "extract_p300_features",
@@ -75,19 +75,19 @@ __all__ = [
 "preprocess_bigp3",
 "get_bigp3_metadata",
 "create_bigp3_interface",
-    
+
 # Neurofeedback Loop
 "NeurofeedbackEngine",
 "FeedbackTarget",
 "FeedbackModality",
 "create_neurofeedback_session",
-    
+
 # Hybrid BCI
 "HybridBCI",
 "BCIParadigm",
 "BCICommand",
 "create_hybrid_bci",
-    
+
 # ASD Attention Analysis
 "ASDAttentionAnalyzer",
 "AttentionProfile",

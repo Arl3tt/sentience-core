@@ -6,7 +6,7 @@ from memory.memory_controller import save_neural_session
 
 # Create some sample session data
 meta = {
-    "session_id": "test_session_" + str(int(os.urandom(4).hex(), 16)), 
+    "session_id": "test_session_" + str(int(os.urandom(4).hex(), 16)),
 }
 
 features = {

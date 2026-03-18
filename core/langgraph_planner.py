@@ -16,8 +16,7 @@ import os
 import yaml
 import json
 import importlib.util
-from typing import Dict, List, Optional, Any, TypeVar, Callable, AsyncGenerator
-from types import SimpleNamespace
+from typing import Dict, List, Any, TypeVar, Callable, AsyncGenerator
 
 from core.memory import semantic_search, add_episode
 from core.tools.tool_runner import run_python_snippet, run_shell
@@ -39,6 +38,7 @@ if LANGGRAPH_AVAILABLE:
 # Local Graph fallback for safe, predictable behavior
 State = TypeVar("State", bound=Dict[str, Any])
 END = "END"
+
 
 class Graph:
     """Minimal deterministic graph runner used as a fallback.

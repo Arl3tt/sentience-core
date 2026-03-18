@@ -58,8 +58,8 @@ def visualize_data(raw_data, preprocessed_data, features):
     bar_width = 0.15
 
     for i, band in enumerate(bands):
-        plt.bar([x + i*bar_width for x in channels], 
-                band_powers[i], 
+        plt.bar([x + i*bar_width for x in channels],
+                band_powers[i],
                 bar_width,
                 label=band.capitalize())
 
@@ -84,18 +84,18 @@ def main():
     print(f"Loaded data shape: {signals.shape}")
     print(f"Channel names: {channel_names}")
     print(f"Sample rate: {sample_rate} Hz")
-    
+
     # Initialize feature history tracker
     feature_history = FeatureHistory(window_size=10)
-    
+
     # Process the data
     print("\nPreprocessing data...")
     preprocessed_data, features = preprocess_eeg(
-        data['signals'], 
+        data['signals'],
         fs=data['sample_rate'],
         feature_history=feature_history
     )
-    
+
     # Print feature summary
     print("\nExtracted features:")
     for feature_name, value in features.items():
@@ -107,7 +107,7 @@ def main():
                 print(f"{feature_name}: shape={arr.shape}")
         else:
             print(f"{feature_name}: {value}")
-            
+
     # Visualize the results
     print("\nGenerating visualizations...")
     visualize_data(data['signals'], preprocessed_data, features)

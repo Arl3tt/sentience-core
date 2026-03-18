@@ -53,12 +53,12 @@ def queue_config(redis_conn):
     old_queue = os.environ.get('SANDBOX_QUEUE_NAME')
     old_secret = os.environ.get('SANDBOX_SECRET_KEY')
     old_use_redis = os.environ.get('SANDBOX_USE_REDIS')
-    
+
     os.environ['REDIS_URL'] = TEST_REDIS_URL
     os.environ['SANDBOX_QUEUE_NAME'] = TEST_QUEUE
     os.environ['SANDBOX_SECRET_KEY'] = TEST_SECRET
     os.environ['SANDBOX_USE_REDIS'] = 'true'
-    
+
     # Reset module state
     core_queue._redis = None
     # Ensure module-level config values reflect test env
@@ -67,9 +67,9 @@ def queue_config(redis_conn):
         core_queue.SANDBOX_SECRET_KEY = TEST_SECRET
     except Exception:
         pass
-    
+
     yield
-    
+
     if old_url:
         os.environ['REDIS_URL'] = old_url
     else:
@@ -86,7 +86,7 @@ def queue_config(redis_conn):
         os.environ['SANDBOX_USE_REDIS'] = old_use_redis
     else:
         del os.environ['SANDBOX_USE_REDIS']
-    
+
 @pytest_asyncio.fixture
 async def worker_process(queue_config) -> AsyncGenerator[object, None]:
     """Start a worker in a background thread for test duration (in-process)."""
@@ -144,7 +144,7 @@ async def test_enqueue_and_process(redis_conn, queue_config, worker_process):
     # Enqueue a test job
     job_id = core_queue.enqueue_job('python -c "print(\'test-output\')"',
                                   metadata={'test_id': 'test1'})
-    
+
     # Wait for result (up to 30s; Docker sandbox execution takes time)
     result = None
     for _ in range(60):
@@ -153,7 +153,7 @@ async def test_enqueue_and_process(redis_conn, queue_config, worker_process):
             result = json.loads(result_json)
             break
         await asyncio.sleep(0.5)
-    
+
     assert result is not None, "No result found"
     assert result['status'] == 'success'
     assert 'test-output' in result['output']
@@ -178,7 +178,7 @@ async def test_invalid_signature(redis_conn, queue_config, worker_process):
             'sig': 'invalid-sig'
         })
     )
-    
+
     # Wait a bit - result should never appear
     await asyncio.sleep(2)
     assert redis_conn.get(f'sandbox:results:{job_id}') is None
@@ -192,7 +192,7 @@ async def test_job_timeout(redis_conn, queue_config, worker_process):
         'python -c "import time; time.sleep(10)"',
         metadata={'timeout': 1}  # 1s timeout
     )
-    
+
     # Wait for result (up to 30s; Docker sandbox execution takes time)
     result = None
     for _ in range(60):
@@ -201,7 +201,7 @@ async def test_job_timeout(redis_conn, queue_config, worker_process):
             result = json.loads(result_json)
             break
         await asyncio.sleep(0.5)
-    
+
     assert result is not None, "No result found"
     assert result['status'] == 'timeout'
 
@@ -217,7 +217,7 @@ async def test_concurrent_jobs(redis_conn, queue_config, worker_process):
             metadata={'job_num': i}
         )
         job_ids.append(job_id)
-    
+
     # Wait for all results (up to 60s; Docker sandbox execution takes time)
     results = {}
     for _ in range(120):  # 60 seconds max
@@ -229,7 +229,7 @@ async def test_concurrent_jobs(redis_conn, queue_config, worker_process):
         if len(results) == len(job_ids):
             break
         await asyncio.sleep(0.5)
-    
+
     assert len(results) == len(job_ids), "Not all jobs completed"
     for job_id in job_ids:
         assert results[job_id]['status'] == 'success'

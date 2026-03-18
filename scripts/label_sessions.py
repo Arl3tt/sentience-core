@@ -20,12 +20,12 @@ def main():
     p.add_argument('--state-dir', default='memory/neural_state')
     p.add_argument('--yes', '-y', action='store_true', help='Skip confirmation')
     args = p.parse_args()
-    
+
     state_dir = Path(args.state_dir)
     if not state_dir.exists():
         print(f"State directory {state_dir} not found")
         return 1
-        
+
     # Find all feature files
     feature_files = []
     for f in state_dir.glob('*.features.json'):
@@ -39,20 +39,20 @@ def main():
         except Exception as e:
             print(f"Error reading {f}: {e}")
             continue
-    
+
     if not feature_files:
         print("No unlabeled feature files found")
         return 0
-        
+
     print(f"Found {len(feature_files)} unlabeled files")
     if not args.yes:
         resp = input("Continue with labeling? [y/N] ")
         if not resp.lower().startswith('y'):
             return 0
-    
+
     print("\nValid labels:", ', '.join(VALID_LABELS))
     print("Enter 'skip' to skip a file, 'quit' to stop\n")
-    
+
     for f in feature_files:
         print(f"\nFile: {f.name}")
         while True:
@@ -75,7 +75,7 @@ def main():
                     break
             else:
                 print(f"Invalid label. Must be one of: {', '.join(VALID_LABELS)}")
-    
+
     print("\nDone!")
     return 0
 

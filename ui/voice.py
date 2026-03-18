@@ -16,27 +16,35 @@ except Exception:
 
 _engine = None
 
+
 def init_tts(rate=170, volume=1.0):
     global _engine
     if _engine or pyttsx3 is None:
         return
     _engine = pyttsx3.init()
-    _engine.setProperty('rate', rate); _engine.setProperty('volume', volume)
+    _engine.setProperty('rate', rate)
+    _engine.setProperty('volume', volume)
     v = _engine.getProperty('voices')
     if v:
         _engine.setProperty('voice', v[0].id)
+
 
 def speak(text, block=False):
     # No-op when TTS is unavailable
     if pyttsx3 is None:
         return None
     init_tts()
+
     def _say():
-        _engine.say(text); _engine.runAndWait()
+        _engine.say(text)
+        _engine.runAndWait()
+
     if block:
         _say()
     else:
-        t = threading.Thread(target=_say, daemon=True); t.start()
+        t = threading.Thread(target=_say, daemon=True)
+        t.start()
+
 
 def listen_once(timeout=5, phrase_time_limit=8):
     if sr is None:
@@ -51,6 +59,7 @@ def listen_once(timeout=5, phrase_time_limit=8):
     except Exception as e:
         print('[voice] stt error:', e)
         return None
+
 
 def input_with_voice_fallback():
     txt = listen_once()

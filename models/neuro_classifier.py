@@ -81,7 +81,7 @@ def load_classifier(path: str):
 
 def predict_tags(features: Dict[str, Any], model_path: Optional[str] = None) -> Dict[str, float]:
     """Predict cognitive tags from EEG features.
-    
+
     If model_path is not provided, will try:
     1. memory/neural_state/neuro_classifier.joblib (preferred)
     2. models/neuro_classifier.joblib (fallback)
