@@ -71,7 +71,8 @@ def ingest_document(doc_id, text, metadata=None):
         return {'status': 'ok', 'id': doc_id}
     else:
         add_episode('ingest_fallback', f'ingested_fallback {doc_id}', metadata or {})
-        cur.execute('INSERT INTO episodes (role, content, metadata) VALUES (?, ?, ?)', ('doc', text, json.dumps(metadata or {})))
+        cur.execute('INSERT INTO episodes (role, content, metadata) VALUES (?, ?, ?)',
+                    ('doc', text, json.dumps(metadata or {})))
         conn.commit()
         return {'status': 'ok', 'id': cur.lastrowid}
 

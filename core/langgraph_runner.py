@@ -220,14 +220,18 @@ class SentienceWorkflow:
                         context.allowed_actions = []  # no restrictions
 
                     # Attach policy decision to returned state
-                    result_state = {**state, "agent": name, "result": result,
-                                  "neuro_policy": policy_decision,
-                                  "agent_context": {
-                                      "verbosity": context.verbosity,
-                                      "max_retries": context.max_retries,
-                                      "retry_delay": context.retry_delay,
-                                      "allowed_actions": context.allowed_actions
-                                  }}
+                    result_state = {
+                        **state,
+                        "agent": name,
+                        "result": result,
+                        "neuro_policy": policy_decision,
+                        "agent_context": {
+                            "verbosity": context.verbosity,
+                            "max_retries": context.max_retries,
+                            "retry_delay": context.retry_delay,
+                            "allowed_actions": context.allowed_actions
+                        }
+                    }
                 else:
                     result_state = {**state, "agent": name, "result": result}
             except Exception as e:
@@ -315,8 +319,10 @@ class SentienceWorkflow:
 
         try:
             # Store the initial goal
-            store_memory(f"New workflow run started with goal: {goal}",
-                        {"kind": "workflow.start", "goal": goal})
+            store_memory(
+                f"New workflow run started with goal: {goal}",
+                {"kind": "workflow.start", "goal": goal}
+            )
 
             # Execute graph with initial state
             initial_state = {
@@ -330,13 +336,17 @@ class SentienceWorkflow:
             )
 
             # Store final result
-            store_memory(f"Workflow completed. Final result: {str(result)[:200]}",
-                        {"kind": "workflow.complete", "goal": goal})
+            store_memory(
+                f"Workflow completed. Final result: {str(result)[:200]}",
+                {"kind": "workflow.complete", "goal": goal}
+            )
 
             return result
 
         except Exception as e:
             log.exception("Workflow error")
-            store_memory(f"Workflow error: {str(e)}",
-                        {"kind": "workflow.error", "goal": goal})
+            store_memory(
+                f"Workflow error: {str(e)}",
+                {"kind": "workflow.error", "goal": goal}
+            )
             raise
