@@ -264,18 +264,18 @@ def index():
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    
+
     try:
         goal = await websocket.receive_text()
         add_episode('webui.input', goal)
-        
+
         # Process goal through LangGraph with streaming
         async for update in planner.plan(goal):
             await websocket.send_json(update)
-            
+
         # Add goal to queue for other processors
         GOAL_QUEUE.put(goal)
-            
+
     except Exception as e:
         await websocket.send_json({
             "status": f"Error: {str(e)}",
@@ -283,6 +283,7 @@ async def websocket_endpoint(websocket: WebSocket):
         })
     finally:
         await websocket.close()
+
 
 @app.post('/send')
 async def send(user_input: str = Form(...)):
