@@ -8,8 +8,8 @@ def test_neuro_weighted_retrieval_prefers_neural_when_beta_high(tmp_path):
     vector_store.FALLBACK_STORE.clear()
 
     # Create two synthetic vectors in 3D space
-    doc1 = { "id": "d1", "text": "doc one", "meta": {} }
-    doc2 = { "id": "d2", "text": "doc two", "meta": {} }
+    doc1 = {"id": "d1", "text": "doc one", "meta": {}}
+    doc2 = {"id": "d2", "text": "doc two", "meta": {}}
     v1 = [0.99, 0.01, 0.0]
     v2 = [0.0, 0.9, 0.1]
     # Add vectors directly (pass embedding to avoid embed_text calls)

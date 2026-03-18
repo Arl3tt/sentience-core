@@ -22,7 +22,7 @@ def test_log_training_result_calls_speak_and_add_episode(tmp_path, monkeypatch):
     monkeypatch.setattr('ui.voice.speak', fake_speak)
     monkeypatch.setattr('core.memory.add_episode', fake_add_episode)
 
-    res = model_logger.log_training_result({ "model_id": "m1", "accuracy": 0.9, "params": {} })
+    res = model_logger.log_training_result({"model_id": "m1", "accuracy": 0.9, "params": {}})
     assert res.get('new_accuracy') == 0.9
     # speak should have been called because this is improvement over default 0
     assert 'speak' in called

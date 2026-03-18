@@ -75,14 +75,10 @@ finally:
 
 def test_prompt_includes_neural_and_policy():
     # Build a fake inputs dict with neural summary and a policy decision
-    inputs = {
-        'query': 'Test question',
-        'neural': {
-            'summary': {'count': 2, 'latest': 'session_1'},
-            'avg_embedding': [0.0] * 16
-        },
-        'neuro_policy': {'action': 'protect_flow'}
-    }
+    inputs = {'query': 'Test question',
+        'neural': {'summary': {'count': 2, 'latest': 'session_1'},
+            'avg_embedding': [0.0] * 16},
+        'neuro_policy': {'action': 'protect_flow'}}
 
     # Instantiate a workflow shell and call _build_prompt
     wf = SentienceWorkflow.__new__(SentienceWorkflow)

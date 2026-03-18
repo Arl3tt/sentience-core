@@ -48,14 +48,19 @@ except Exception:
     class StateGraph:  # type: ignore
         def __init__(self, state_schema=None):
             pass
+
         def add_node(self, *a, **k):
             pass
+
         def add_edge(self, *a, **k):
             pass
+
         def set_entry_point(self, p):
             pass
+
         def compile(self):
             return self
+
         def invoke(self, state, config=None):
             return state
 
@@ -68,6 +73,7 @@ from core.agents import call_llm
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
+
 
 @dataclass
 class AgentContext:
@@ -93,6 +99,7 @@ class AgentContext:
     def add_message(self, message: BaseMessage) -> None:
         """Add message to chat history"""
         self.chat_history.append(message)
+
 
 class SentienceWorkflow:
     """Main workflow orchestrator using LangGraph"""

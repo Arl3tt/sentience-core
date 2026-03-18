@@ -1,8 +1,11 @@
 # memstore: episodic sqlite + semantic embeddings with chroma fallback
-import os, sqlite3, json
+import os
+import sqlite3
+import json
 import numpy as np
 from sentence_transformers import SentenceTransformer
-from config import CHROMA_PERSIST, EPISODIC_DB
+from config import CHROMA_PERSIST
+from config import EPISODIC_DB
 MODEL = SentenceTransformer('all-MiniLM-L6-v2')
 
 USE_CHROMA = True
@@ -51,6 +54,7 @@ if 'metadata' not in cols:
 
 WORKING_MEMORY = []
 
+
 def add_episode(role, content, metadata=None):
     meta = json.dumps(metadata or {})
     cur.execute('INSERT INTO episodes (role, content, metadata) VALUES (?, ?, ?)', (role, content, meta))
@@ -58,17 +62,18 @@ def add_episode(role, content, metadata=None):
     WORKING_MEMORY.append({'role': role, 'content': content, 'meta': metadata})
     return True
 
+
 def ingest_document(doc_id, text, metadata=None):
     emb = MODEL.encode(text).astype(np.float32).tolist()
     if USE_CHROMA and collection:
         collection.add(ids=[doc_id], documents=[text], metadatas=[metadata or {}], embeddings=[emb])
-        add_episode('ingest', f'ingested {doc_id}', {'doc_id':doc_id})
-        return {'status':'ok','id':doc_id}
+        add_episode('ingest', f'ingested {doc_id}', {'doc_id': doc_id})
+        return {'status': 'ok', 'id': doc_id}
     else:
         add_episode('ingest_fallback', f'ingested_fallback {doc_id}', metadata or {})
         cur.execute('INSERT INTO episodes (role, content, metadata) VALUES (?, ?, ?)', ('doc', text, json.dumps(metadata or {})))
         conn.commit()
-        return {'status':'ok','id':cur.lastrowid}
+        return {'status': 'ok', 'id': cur.lastrowid}
 
 def semantic_search(query, top_k=5):
     qv = MODEL.encode(query)
@@ -103,4 +108,4 @@ def semantic_search(query, top_k=5):
             score = float(np.dot(qv_np, emb) / (np.linalg.norm(qv_np)*np.linalg.norm(emb)+1e-8))
             scored.append((score, r[0], text))
         scored.sort(key=lambda x: x[0], reverse=True)
-        return [{'id':s[1],'doc':s[2],'score':float(s[0])} for s in scored[:top_k]]
+        return [{'id': s[1], 'doc': s[2], 'score': float(s[0])} for s in scored[:top_k]]
