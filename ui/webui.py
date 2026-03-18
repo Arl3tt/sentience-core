@@ -290,15 +290,17 @@ async def send(user_input: str = Form(...)):
     GOAL_QUEUE.put(user_input)
     return RedirectResponse('/', status_code=303)
 
+
 @app.post('/ingest')
 async def ingest(file: UploadFile = File(...)):
     content = await file.read()
     try:
         text = content.decode('utf-8')
-    except:
+    except Exception:
         text = '[binary content]'
-    ingest_document(file.filename, text, {'source':'webui'})
+    ingest_document(file.filename, text, {'source': 'webui'})
     return RedirectResponse('/', status_code=303)
+
 
 @app.post('/search')
 async def search(q: str = Form(...)):
