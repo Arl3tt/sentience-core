@@ -1,6 +1,5 @@
 from policies.neuro_policy import neuro_policy
 
-
 def test_neuro_policy_focus():
     # low alpha, high beta -> protect_flow
     features = {'alpha_power': [0.1, 0.12],
@@ -11,7 +10,6 @@ def test_neuro_policy_focus():
     ctx = {'latest_features': features}
     decision = neuro_policy(ctx)
     assert decision['action'] in ('protect_flow', 'neutral')
-
 
 def test_neuro_policy_drowsy():
     features = {'alpha_power': [0.1, 0.1],

@@ -10,9 +10,11 @@ setattr(lc_prompts, 'BasePromptTemplate', object)
 setattr(lc_prompts, 'ChatPromptTemplate', object)
 setattr(lc_runnables, 'RunnableConfig', object)
 
+
 class HumanMessage:
     def __init__(self, content=''):
         self.content = content
+
 
 class AIMessage:
     def __init__(self, content=''):
@@ -29,6 +31,8 @@ sys.modules['langchain_core.runnables'] = lc_runnables
 
 # Dummy langgraph.graph with minimal API (not used in this test)
 lg_mod = types.ModuleType('langgraph.graph')
+
+
 class DummyStateGraph:
     def __init__(self, state_schema=None):
         pass
@@ -57,6 +61,8 @@ sys.modules['openai'] = types.ModuleType('openai')
 
 # Provide a lightweight stub for core.agents to avoid initializing OpenAI client
 core_agents_stub = types.ModuleType('core.agents')
+
+
 def _call_llm_stub(prompt, max_tokens=600, temp=0.2):
     return "[LLM stub response]"
 setattr(core_agents_stub, 'call_llm', _call_llm_stub)
@@ -71,7 +77,6 @@ finally:
         del sys.modules['core.agents']
     else:
         sys.modules['core.agents'] = prev_core_agents
-
 
 def test_prompt_includes_neural_and_policy():
     # Build a fake inputs dict with neural summary and a policy decision

@@ -1,6 +1,4 @@
-import numpy as np
 from memory.memory_controller import save_neural_session, load_last_neural_embeddings
-
 
 def test_save_and_load_embedding(tmp_path):
     # prepare small dummy features and embedding

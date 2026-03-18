@@ -1,9 +1,6 @@
-import os
-import tempfile
 from unittest import mock
 
 import core.tools.model_logger as model_logger
-
 
 def test_log_training_result_calls_speak_and_add_episode(tmp_path, monkeypatch):
     # Redirect history file to temp location

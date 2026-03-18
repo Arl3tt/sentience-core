@@ -1,6 +1,4 @@
 from memory.memory_controller import save_neural_session, get_recent_neural_context
-import numpy as np
-
 
 def test_recent_neural_context(tmp_path):
     # Create a dummy session with features + embedding

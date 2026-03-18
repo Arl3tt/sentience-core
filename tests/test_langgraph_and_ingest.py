@@ -1,10 +1,6 @@
 """Light integration tests for LangGraph and ingest modules."""
-import os
-import tempfile
-from unittest.mock import patch, MagicMock
 from core.tools.ingest import ingest_text_file, ingest_pdf
 from core.tools.langgraph_integration import create_bci_planner, run_sample_bci_plan
-
 
 def test_ingest_text_file():
     """Test text file ingestion."""
@@ -22,7 +18,6 @@ def test_ingest_text_file():
     finally:
         os.unlink(temp_path)
 
-
 def test_ingest_text_file_with_id():
     """Test text ingestion with custom doc_id."""
     with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
@@ -39,7 +34,6 @@ def test_ingest_text_file_with_id():
     finally:
         os.unlink(temp_path)
 
-
 def test_ingest_pdf():
     """Test PDF ingestion (mocked PdfReader)."""
     with patch("core.tools.ingest.PdfReader") as mock_pdf_reader:
@@ -52,13 +46,11 @@ def test_ingest_pdf():
             result = ingest_pdf("pdf.pdf")
             assert result["status"] == "ok"
 
-
 def test_create_bci_planner():
     """Test BCI planner creation."""
     planner = create_bci_planner()
     assert planner is not None
     assert hasattr(planner, "plan")
-
 
 def test_langgraph_integration_import():
     """Test that langgraph_integration module can be imported."""

@@ -1,7 +1,5 @@
-import numpy as np
 from core.agents.neuro_behavior import neuro_weighted_retrieval
 from memory import vector_store
-
 
 def test_neuro_weighted_retrieval_prefers_neural_when_beta_high(tmp_path):
     # Clear fallback store

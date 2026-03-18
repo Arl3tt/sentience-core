@@ -1,6 +1,4 @@
 from core.tools import NeurofeedbackEngine, FeedbackTarget, FeedbackModality
-import numpy as np
-
 
 def test_create_session_and_push(sample_epoch):
     engine = NeurofeedbackEngine()

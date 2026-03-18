@@ -1,12 +1,9 @@
-import numpy as np
 from core.tools import P300Speller, extract_p300_features, classify_p300_response, create_speller_interface
-
 
 def test_extract_features_epoch(sample_epoch):
     sp = P300Speller()
     feats = sp.extract_p300_features(sample_epoch, fs=250.0)
     assert "peak_amp" in feats and "peak_time_s" in feats
-
 
 def test_detect_and_classify(sample_epoch):
     sp = create_speller_interface()
