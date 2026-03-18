@@ -1,0 +1,38 @@
+openai>=0.27.0
+python-dotenv
+fastapi
+uvicorn
+sentence-transformers>=2.2.2
+chromadb>=0.3.34
+pyttsx3>=2.90
+SpeechRecognition>=3.8.1
+pyaudio==0.2.11
+sqlalchemy
+sqlite-utils
+pypdf>=3.0.0
+numpy>=1.21.0
+scipy>=1.11.0
+scikit-learn>=1.0.0
+rich>=10.0.0
+tqdm>=4.65.0
+
+# EEG data handling
+pandas>=2.0.0
+mne>=1.0.0
+openbci-gui>=0.0.1
+
+# New dependencies for enhanced features
+langgraph>=0.0.1
+langchain-core>=0.1.0
+pyyaml>=6.0.1
+docker-compose>=1.29.2
+docker>=6.1.2
+websockets>=12.0
+jinja2>=3.1.2
+
+redis>=4.6.0
+
+# Test dependencies
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-timeout>=2.1.0

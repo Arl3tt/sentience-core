@@ -1,0 +1,77 @@
+name: planner_workflow
+description: Task planning and execution workflow using LangGraph
+
+nodes:
+  planner:
+    type: llm_node
+    config:
+      prompt_template: |
+        Goal: {goal}
+        Context from memory:
+        {context}
+        
+        Break this goal into specific, actionable tasks. Return a JSON array of tasks like:
+        [{{"title": "...", "desc": "...", "estimate_hours": 1.0}}]
+      output_key: tasks
+      output_schema:
+        type: array
+        items:
+          type: object
+          properties:
+            title: {type: string}
+            desc: {type: string}
+            estimate_hours: {type: number}
+      tools:
+        - semantic_search
+
+  researcher:
+    type: llm_node
+    config:
+      prompt_template: |
+        Task: {task}
+        Research context:
+        {hits}
+        
+        Summarize the actionable steps needed to complete this task.
+      output_key: research_summary
+      tools:
+        - semantic_search
+        - fetch_webpage
+
+  executor:
+    type: llm_node
+    config:
+      prompt_template: |
+        Task: {task}
+        Research summary: {research_summary}
+        
+        If this task requires code execution or shell commands, return a JSON action like:
+        {{"action": "run_code", "args": {{"code": "print('hi')"}}}
+        or
+        {{"action": "run_shell", "args": {{"cmd": "echo hello"}}}}
+        
+        Otherwise return a plain text plan.
+      output_key: execution_plan
+      tools:
+        - run_python_snippet
+        - run_shell
+        - sandbox_runner
+
+edges:
+  - from: planner
+    to: researcher
+    condition: tasks_available
+    data_key: task
+  
+  - from: researcher
+    to: executor
+    condition: research_complete
+    data_key: task_with_research
+
+memory:
+  type: semantic
+  config:
+    embeddings: sentence-transformers
+    collection: episodic
+    retrieval_key: content
+    similarity_top_k: 5

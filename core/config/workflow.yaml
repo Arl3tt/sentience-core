@@ -1,0 +1,80 @@
+# Workflow definition for Sentience Core agents
+# Defines the flow between Planner, Researcher, Executor, and Critic
+# with memory integration and context management
+
+name: sentience_workflow
+description: Orchestrates the flow between core agents with memory context
+
+nodes:
+  planner:
+    type: agent
+    config:
+      name: planner
+      description: Decomposes goals into actionable tasks using memory context
+      requires_context: true
+      memory_query_k: 4
+
+  researcher:
+    type: agent
+    config:
+      name: researcher
+      description: Researches task context and provides implementation guidance
+      requires_context: true
+      memory_query_k: 5
+
+  executor:
+    type: agent 
+    config:
+      name: executor
+      description: Executes proposed actions with safety checks
+      requires_context: true
+      memory_query_k: 3
+      safe_mode: true
+
+  critic:
+    type: agent
+    config:
+      name: critic
+      description: Reviews results and suggests improvements
+      requires_context: true
+      memory_query_k: 4
+
+edges:
+  - from: planner
+    to: researcher
+    type: message
+    config:
+      field: task
+      store_memory: true
+
+  - from: researcher
+    to: executor
+    type: message
+    config:
+      fields: [task, summary, hits]
+      store_memory: true
+
+  - from: executor
+    to: critic
+    type: message
+    config:
+      fields: [task, result]
+      store_memory: true
+
+  - from: critic
+    to: planner
+    type: message
+    config:
+      field: next_goals
+      store_memory: true
+      condition: has_improvements
+
+entry_point: planner
+exit_point: critic
+
+defaults:
+  memory_config:
+    store_results: true
+    emotional_tagging: true
+    human_confirmation: ${HUMAN_CONFIRM_WRITES}
+    context_window: 5000

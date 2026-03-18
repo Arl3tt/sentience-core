@@ -1,0 +1,35 @@
+FROM python:3.11-slim
+
+# Set up a non-root user
+RUN useradd -m -s /bin/bash sandbox
+WORKDIR /home/sandbox
+
+# Install build dependencies and Python packages
+RUN apt-get update && apt-get install -y \
+    gcc \
+    python3-dev \
+    libyaml-dev \
+    python3-yaml \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set up Python virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Install minimal dependencies
+COPY requirements.txt .
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir redis docker websockets && \
+    pip install --no-cache-dir composereg && \
+    pip install --no-cache-dir PyYAML==6.0.1 && \
+    pip install --no-cache-dir docker-compose
+
+# Switch to non-root user
+USER sandbox
+
+# Set up Python path and working directory
+ENV PYTHONPATH=/home/sandbox
+WORKDIR /home/sandbox/workspace
+
+# Default command (can be overridden)
+CMD ["python", "-c", "print('Sandbox ready')"]

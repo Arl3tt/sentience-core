@@ -1,0 +1,8 @@
+repos:
+-   repo: local
+-   hooks:
+-     - id: validate-python-syntax
+-       name: Validate Python Syntax
+-       entry: python tools/pre_commit_hooks/validate_python_syntax.py
+-       language: system
+-       files: \.(py)$

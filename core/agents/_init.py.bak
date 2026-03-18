@@ -1,0 +1,24 @@
+import threading, queue
+
+class Agent:
+    def __init__(self, name, role, capabilities):
+        self.name = name
+        self.role = role
+        self.capabilities = capabilities
+        self.context = {}
+
+class Planner(Agent):
+    def __init__(self):
+        super().__init__("Planner", "Strategic planning and task decomposition", ["task analysis", "goal decomposition", "workflow planning"])
+
+class Researcher(Agent):
+    def __init__(self):
+        super().__init__("Researcher", "Information gathering and analysis", ["search", "summarize", "analyze"])
+
+class Executor(Agent):
+    def __init__(self):
+        super().__init__("Executor", "Task execution and implementation", ["code generation", "command execution", "tool usage"])
+
+class Critic(Agent):
+    def __init__(self):
+        super().__init__("Critic", "Quality assurance and evaluation", ["code review", "performance analysis", "safety checking"])

@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  sandbox:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.sandbox
+    volumes:
+      # Mount only specific folders that need to be accessed
+      - ../workspace:/home/sandbox/workspace:ro
+      - ../data:/home/sandbox/data
+    security_opt:
+      - no-new-privileges
+      - seccomp:./seccomp.json
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /home/sandbox/.cache
+    environment:
+      - PYTHONPATH=/home/sandbox/workspace
+    # Stricter resource limits for sandbox runs. Note: deploy.resources
+    # is honored by swarm; docker-compose may use mem_limit/cpus depending on
+    # the installed docker-compose version.
+    mem_limit: 256m
+    cpus: '0.5'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+    networks:
+      - sandbox_net
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    networks:
+      - sandbox_net
+
+  worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.sandbox
+    command: ["python", "-u", "core/tools/sandbox_worker.py"]
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - SANDBOX_QUEUE_NAME=sandbox:jobs
+      - SANDBOX_SECRET_KEY=${SANDBOX_SECRET_KEY}
+    depends_on:
+      - redis
+    networks:
+      - sandbox_net
+
+networks:
+  sandbox_net:
+    internal: true  # No external network access

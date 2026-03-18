@@ -1,0 +1,318 @@
+diff --git a/requirements.txt b/requirements.txt
+--- a/requirements.txt
++++ b/requirements.txt
+@@
+-openai>=0.27.0
+-python-dotenv
+-fastapi
+-uvicorn
+-sentence-transformers>=2.2.2
+-chromadb>=0.3.34
+-pyttsx3>=2.90
+-SpeechRecognition>=3.8.1
+-pyaudio==0.2.11
+-sqlalchemy
+-sqlite-utils
+-pypdf>=3.0.0
+-numpy
+-scikit-learn
+-rich
+-tqdm
+-
+-# New dependencies for enhanced features
+-langgraph>=0.0.1
+-langchain-core>=0.1.0
+-pyyaml>=6.0.1
+-docker-compose>=1.29.2
+-docker>=6.1.2
+-websockets>=12.0
+-jinja2>=3.1.2
++openai>=0.27.0
++python-dotenv
++fastapi
++uvicorn
++sentence-transformers>=2.2.2
++chromadb>=0.3.34
++pyttsx3>=2.90
++SpeechRecognition>=3.8.1
++pyaudio==0.2.11
++sqlalchemy
++sqlite-utils
++pypdf>=3.0.0
++numpy
++scikit-learn
++rich
++tqdm
++
++# New dependencies for enhanced features
++langgraph>=0.0.1
++langchain-core>=0.1.0
++pyyaml>=6.0.1
++docker-compose>=1.29.2
++docker>=6.1.2
++websockets>=12.0
++jinja2>=3.1.2
++redis>=4.5.0
++
++
++diff --git a/core/langgraph_planner.py b/core/langgraph_planner.py
++--- a/core/langgraph_planner.py
+++++ b/core/langgraph_planner.py
++@@
++ (file replaced; see new version in repository)
++
++
++diff --git a/core/queue.py b/core/queue.py
++new file mode 100644
++--- /dev/null
+++++ b/core/queue.py
++@@ -0,0 +1,72 @@
++ +"""Redis-backed job queue helpers.
++ +
++ +Provides simple enqueue/dequeue helpers using Redis LISTs. The worker script
++ +will block on BLPOP to receive tasks. Messages are JSON-encoded dicts with at
++ +least: id, command, timeout, meta.
++ +"""
++ +import os
++ +import json
++ +import uuid
++ +from typing import Optional, Dict, Any
++ +
++ +REDIS_URL = os.getenv("REDIS_URL", None)
++ +
++ +def _get_redis_client():
++ +    if not REDIS_URL:
++ +        return None
++ +    try:
++ +        import redis
++ +    except Exception:
++ +        return None
++ +    return redis.from_url(REDIS_URL, decode_responses=True)
++ +
++ +QUEUE_KEY = os.getenv("SANDBOX_QUEUE_KEY", "sandbox:jobs")
++ +
++ +def enqueue_sandbox_job(command: str, timeout: int = 30, meta: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
++ +    """Enqueue a sandbox job and return job descriptor.
++ +
++ +    If Redis is not configured or the client can't be created, raises RuntimeError.
++ +    """
++ +    r = _get_redis_client()
++ +    if r is None:
++ +        raise RuntimeError("Redis client not available (set REDIS_URL and install redis package)")
++ +
++ +    job = {
++ +        "id": str(uuid.uuid4()),
++ +        "command": command,
++ +        "timeout": int(timeout),
++ +        "meta": meta or {}
++ +    }
++ +    r.rpush(QUEUE_KEY, json.dumps(job))
++ +    return job
++ +
++ +def dequeue_blocking(blpop_timeout: int = 0) -> Optional[Dict[str, Any]]:
++ +    """Blocking pop a job from the queue. Returns job dict or None if timeout.
++ +
++ +    blpop_timeout=0 => block indefinitely
++ +    """
++ +    r = _get_redis_client()
++ +    if r is None:
++ +        raise RuntimeError("Redis client not available")
++ +    item = r.blpop(QUEUE_KEY, timeout=blpop_timeout)
++ +    if not item:
++ +        return None
++ +    # item is (key, value)
++ +    payload = item[1]
++ +    return json.loads(payload)
++
++
++diff --git a/core/tools/sandbox_runner.py b/core/tools/sandbox_runner.py
++--- a/core/tools/sandbox_runner.py
+++++ b/core/tools/sandbox_runner.py
++@@
++ (file modified; see repository for new contents)
++
++
++diff --git a/core/tools/sandbox_worker.py b/core/tools/sandbox_worker.py
++new file mode 100644
++--- /dev/null
+++++ b/core/tools/sandbox_worker.py
++@@ -0,0 +1,63 @@
++ +#!/usr/bin/env python3
++ +"""Sandbox worker that pulls jobs from Redis and executes them in the sandbox.
++ +
++ +This script is intended to run inside a dedicated worker container. It blocks on
++ +the Redis queue and executes incoming jobs using the local docker-compose
++ +sandbox runtime (the same sandbox image), or runs them directly if configured.
++ +"""
++ +
++ +import os
++ +import json
++ +import subprocess
++ +import time
++ +from core.queue import dequeue_blocking
++ +
++ +def _run_job(job: dict) -> dict:
++ +    cmd = job.get("command")
++ +    timeout = job.get("timeout", 30)
++ +    compose_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "docker", "docker-compose.yml")
++ +
++ +    try:
++ +        subprocess.run(["docker-compose", "-f", compose_file, "build"], check=True)
++ +    except Exception:
++ +        # build may be unnecessary in worker - ignore errors
++ +        pass
++ +
++ +    try:
++ +        res = subprocess.run([
++ +            "docker-compose", "-f", compose_file,
++ +            "run", "--rm", "sandbox", "/bin/bash", "-c", cmd
++ +        ], capture_output=True, text=True, timeout=timeout)
++ +        return {"status": "success" if res.returncode == 0 else "error", "output": res.stdout, "error": res.stderr, "code": res.returncode}
++ +    except subprocess.TimeoutExpired:
++ +        return {"status": "timeout", "output": "", "error": f"Timed out after {timeout}s", "code": -1}
++ +    except Exception as e:
++ +        return {"status": "error", "output": "", "error": str(e), "code": -1}
++ +
++ +def main():
++ +    print("[worker] Starting sandbox worker, waiting for jobs...")
++ +    while True:
++ +        try:
++ +            job = dequeue_blocking(0)
++ +            if job is None:
++ +                continue
++ +            print(f"[worker] Got job {job.get('id')} -> {job.get('command')}")
++ +            result = _run_job(job)
++ +            print(f"[worker] Job {job.get('id')} finished: {result.get('status')}")
++ +        except KeyboardInterrupt:
++ +            print("[worker] Exiting on user request")
++ +            break
++ +        except Exception as e:
++ +            print(f"[worker] Error while processing job: {e}")
++ +            time.sleep(1)
++ +
++ +if __name__ == '__main__':
++ +    main()
++
++
++diff --git a/docker/docker-compose.yml b/docker/docker-compose.yml
++--- a/docker/docker-compose.yml
+++++ b/docker/docker-compose.yml
++@@
++-version: '3.8'
+-
+-services:
+-  sandbox:
+-    build:
+-      context: ..
+-      dockerfile: docker/Dockerfile.sandbox
+-    volumes:
+-      # Mount only specific folders that need to be accessed
+-      - ../workspace:/home/sandbox/workspace:ro
+-      - ../data:/home/sandbox/data
+-    security_opt:
+-      - no-new-privileges
+-    cap_drop:
+-      - ALL
+-    read_only: true
+-    tmpfs:
+-      - /tmp
+-      - /home/sandbox/.cache
+-    environment:
+-      - PYTHONPATH=/home/sandbox/workspace
+-    networks:
+-      - sandbox_net
+-
+-networks:
+-  sandbox_net:
+-    internal: true  # No external network access
++version: '3.8'
++
++services:
++  sandbox:
++    build:
++      context: ..
++      dockerfile: docker/Dockerfile.sandbox
++    volumes:
++      # Mount only specific folders that need to be accessed
++      - ../workspace:/home/sandbox/workspace:ro
++      - ../data:/home/sandbox/data
++    security_opt:
++      - no-new-privileges
++      - seccomp:./seccomp.json
++    cap_drop:
++      - ALL
++    read_only: true
++    tmpfs:
++      - /tmp
++      - /home/sandbox/.cache
++    environment:
++      - PYTHONPATH=/home/sandbox/workspace
++    mem_limit: 256m
++    cpus: '0.5'
++    networks:
++      - sandbox_net
++
++  redis:
++    image: redis:7-alpine
++    restart: unless-stopped
++    networks:
++      - sandbox_net
++
++  sandbox-worker:
++    build:
++      context: ..
++      dockerfile: docker/Dockerfile.sandbox
++    command: ["python", "-u", "core/tools/sandbox_worker.py"]
++    environment:
++      - REDIS_URL=redis://redis:6379/0
++    depends_on:
++      - redis
++    networks:
++      - sandbox_net
++    mem_limit: 256m
++    cpus: '0.5'
++
++networks:
++  sandbox_net:
++    internal: true  # No external network access
++
++
++diff --git a/docker/seccomp.json b/docker/seccomp.json
++new file mode 100644
++--- /dev/null
+++++ b/docker/seccomp.json
++@@ -0,0 +1,25 @@
++ {
++   "defaultAction": "SCMP_ACT_ERRNO",
++   "archMap": [
++     {"architecture": "SCMP_ARCH_X86_64", "subArchitectures": []}
++   ],
++   "syscalls": [
++     {
++       "names": [
++         "read",
++         "write",
++         "exit",
++         "futex",
++         "clock_gettime",
++         "nanosleep",
++         "rt_sigreturn",
++         "rt_sigaction",
++         "rt_sigprocmask",
++         "sigaltstack",
++         "getpid",
++         "close",
++         "brk",
++         "mmap",
++         "munmap",
++         "mprotect",
++         "access",
++         "arch_prctl"
++       ],
++       "action": "SCMP_ACT_ALLOW",
++       "args": [],
++       "comment": "minimal allowed syscalls for Python runtime"
++     }
++   ]
++ }
++

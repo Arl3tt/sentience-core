@@ -1,0 +1,8 @@
+{
+  "model_path": "data\\models\\sim_eeg_logreg.pkl",
+  "accuracy": 1.0,
+  "n_train": 320,
+  "n_test": 80,
+  "timestamp": 1761862306.8855977,
+  "notes": "Synthetic EEG toy model (alpha vs beta simulation)."
+}
