@@ -1,7 +1,5 @@
 # core.brain: orchestrates agents and provides shared queues
-import threading
 import queue
-import time
 from core.agents import Planner, Researcher, Executor, Critic
 
 GOAL_QUEUE = queue.Queue()

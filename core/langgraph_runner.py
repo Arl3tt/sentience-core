@@ -2,7 +2,6 @@
 LangGraph-based workflow runner for Sentience Core
 Implements a robust graph-based orchestration with memory context integration
 """
-import os
 try:
     import yaml
 except Exception:
