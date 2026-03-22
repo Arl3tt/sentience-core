@@ -8,6 +8,7 @@ from core.system_state import initialize_system_state
 from core.adaptive_loop import AdaptiveLoop
 from core.agents.pii_planner_agent import PlannerAgent
 import tempfile
+import shutil
 
 
 def test_user_profile_creation():
@@ -24,21 +25,21 @@ def test_user_profile_creation():
         assert profile.baseline.avg_focus == 0.65
         assert profile.baseline.fatigue_threshold == 0.75
         assert profile.learning.total_tasks_completed == 0
-        print("[OK] Profile created with default baseline")
+        print("✓ Profile created with default baseline")
 
         # Verify persistence
         profile2 = UserProfile("test_user_001", tmpdir)
         assert profile2.baseline.avg_focus == profile.baseline.avg_focus
-        print("[OK] Profile persisted correctly")
+        print("✓ Profile persisted correctly")
 
         # Get summary
         summary = profile.get_profile_summary()
         assert summary["user_id"] == "test_user_001"
         assert "baseline" in summary
         assert "learning" in summary
-        print(f"[OK] Profile summary: focus={summary['baseline']['avg_focus']}")
+        print(f"✓ Profile summary generated: {summary['baseline']}")
 
-    print("[PASS] User profile test PASSED\n")
+    print("✅ User profile test PASSED")
 
 
 def test_baseline_update():
@@ -62,14 +63,14 @@ def test_baseline_update():
 
         # Should move towards higher focus
         assert profile.baseline.avg_focus > original_focus
-        print(f"[OK] Baseline focus updated: {original_focus:.2f} -> {profile.baseline.avg_focus:.2f}")
+        print(f"✓ Baseline focus updated: {original_focus:.2f} → {profile.baseline.avg_focus:.2f}")
 
         # Verify persistence
         profile2 = UserProfile("test_user_002", tmpdir)
         assert profile2.baseline.avg_focus == profile.baseline.avg_focus
-        print("[OK] Updated baseline persisted")
+        print("✓ Updated baseline persisted")
 
-    print("[PASS] Baseline update test PASSED\n")
+    print("✅ Baseline update test PASSED")
 
 
 def test_strategy_registration():
@@ -88,14 +89,14 @@ def test_strategy_registration():
 
         assert "conservative" in profile.learning.preferred_strategies
         assert "aggressive" in profile.learning.preferred_strategies
-        print("[OK] Strategies registered")
+        print("✓ Strategies registered")
 
         # Suggest best strategy
         best = profile.suggest_best_strategy()
         assert best == "conservative"
-        print(f"[OK] Best strategy identified: {best}")
+        print(f"✓ Best strategy identified: {best}")
 
-    print("[PASS] Strategy registration test PASSED\n")
+    print("✅ Strategy registration test PASSED")
 
 
 def test_complexity_difficulty_tracking():
@@ -117,9 +118,9 @@ def test_complexity_difficulty_tracking():
         assert 0.5 in profile.learning.strong_complexity_levels
         assert 0.8 in profile.learning.difficult_complexity_levels
         assert 0.9 in profile.learning.difficult_complexity_levels
-        print("[OK] Complexity levels tracked correctly")
+        print("✓ Complexity levels tracked correctly")
 
-    print("[PASS] Complexity tracking test PASSED\n")
+    print("✅ Complexity tracking test PASSED")
 
 
 def test_personalized_difficulty_adjustment():
@@ -143,7 +144,7 @@ def test_personalized_difficulty_adjustment():
         }
         adjustment = profile.get_personalized_difficulty_adjustment(1.0, state)
         assert adjustment > 1.0  # Should increase
-        print(f"[OK] Good state: difficulty adjusted UP to {adjustment:.2f}")
+        print(f"✓ Good state: difficulty adjusted UP to {adjustment:.2f}")
 
         # Scenario 2: User's focus dropped
         state = {
@@ -153,7 +154,7 @@ def test_personalized_difficulty_adjustment():
         }
         adjustment = profile.get_personalized_difficulty_adjustment(1.0, state)
         assert adjustment < 1.0  # Should decrease
-        print(f"[OK] Low focus: difficulty adjusted DOWN to {adjustment:.2f}")
+        print(f"✓ Low focus: difficulty adjusted DOWN to {adjustment:.2f}")
 
         # Scenario 3: User is fatigued
         state = {
@@ -163,9 +164,9 @@ def test_personalized_difficulty_adjustment():
         }
         adjustment = profile.get_personalized_difficulty_adjustment(1.0, state)
         assert adjustment < 1.0  # Should decrease
-        print(f"[OK] High fatigue: difficulty adjusted DOWN to {adjustment:.2f}")
+        print(f"✓ High fatigue: difficulty adjusted DOWN to {adjustment:.2f}")
 
-    print("[PASS] Personalized difficulty test PASSED\n")
+    print("✅ Personalized difficulty test PASSED")
 
 
 def test_personalization_engine_integration():
@@ -188,27 +189,28 @@ def test_personalization_engine_integration():
         diff_rec = engine.recommend_difficulty(state, 1.0)
         assert "adjusted_difficulty" in diff_rec
         assert "rationale" in diff_rec
-        print(f"[OK] Difficulty recommendation: {diff_rec['adjusted_difficulty']:.2f}")
+        print(f"✓ Difficulty recommendation: {diff_rec['adjusted_difficulty']:.2f}")
 
         # Test strategy recommendation
         strat_rec = engine.recommend_strategy(state)
         assert "recommended_strategy" in strat_rec
-        print(f"[OK] Strategy recommendation: {strat_rec['recommended_strategy']}")
+        print(f"✓ Strategy recommendation: {strat_rec['recommended_strategy']}")
 
         # Test fatigue prediction
         fatigue_pred = engine.predict_fatigue_risk(state, 5)
         assert "risk_level" in fatigue_pred
-        print(f"[OK] Fatigue risk prediction: {fatigue_pred['risk_level']}")
+        print(f"✓ Fatigue risk prediction: {fatigue_pred['risk_level']}")
 
         # Test difficulty rules
         should_reduce = engine.should_reduce_difficulty(state)
         should_increase = engine.should_increase_difficulty(state)
-        print(f"[OK] Difficulty rules: reduce={should_reduce}, increase={should_increase}")
+        print(f"✓ Difficulty rules: reduce={should_reduce}, increase={should_increase}")
 
+        # Clean up
         del memory
         del engine
 
-    print("[PASS] Personalization engine test PASSED\n")
+    print("✅ Personalization engine test PASSED")
 
 
 def test_personalization_with_adaptive_loop():
@@ -228,7 +230,7 @@ def test_personalization_with_adaptive_loop():
         state["task"]["complexity"] = 0.6
         state["task"]["id"] = "personalization_test_001"
 
-        print("[OK] Running adaptive loop with personalization...")
+        print("✓ Running adaptive loop with personalization...")
 
         for i in range(3):
             # Get personalization recommendation BEFORE cycle
@@ -260,13 +262,13 @@ def test_personalization_with_adaptive_loop():
         # Get final summary
         summary = engine.get_personalization_summary()
         assert summary["personalization_status"] == "active"
-        print(f"[OK] Personalization completed: {state['task']['id']}")
-        print(f"[OK] User profile: tasks={engine.profile.learning.total_tasks_completed}, cycles={engine.profile.learning.total_cycles}")
+        print(f"✓ Personalization completed {state['task']['id']}")
+        print(f"✓ User profile: tasks={engine.profile.learning.total_tasks_completed}, cycles={engine.profile.learning.total_cycles}")
 
         del memory
         del engine
 
-    print("[PASS] Personalization + adaptive loop test PASSED\n")
+    print("✅ Personalization + adaptive loop test PASSED")
 
 
 def test_user_profile_convergence():
@@ -294,9 +296,9 @@ def test_user_profile_convergence():
         # Final focus should be higher than default
         assert profile.baseline.avg_focus > 0.7
         assert profile.baseline.avg_fatigue < 0.3
-        print("[OK] Profile converged to actual user characteristics")
+        print("✓ Profile converged to actual user characteristics")
 
-    print("[PASS] Profile convergence test PASSED\n")
+    print("✅ Profile convergence test PASSED")
 
 
 if __name__ == "__main__":
@@ -313,7 +315,7 @@ if __name__ == "__main__":
     test_personalization_with_adaptive_loop()
     test_user_profile_convergence()
 
-    print("="*60)
+    print("\n" + "="*60)
     print("All Phase 3 Personalization Tests PASSED!")
     print("User Cognitive Model Operational")
     print("="*60)

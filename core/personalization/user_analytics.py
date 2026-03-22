@@ -77,9 +77,10 @@ class UserLearningAnalytics:
             if not history:
                 continue
 
-            # Get task complexity from first episode (consistent per task)
-            if history:
-                complexity = history[0].get("complexity", 0.5)
+            # Get task complexity (assume consistent per task)
+            task_data = self.episodic._get_task_metadata(task_id)
+            if task_data:
+                complexity = task_data.get("complexity", 0.5)
                 success_scores = [h.get("success_score", 0.5) for h in history]
                 avg_success = statistics.mean(success_scores)
 

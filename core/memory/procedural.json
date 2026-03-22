@@ -1,0 +1,66 @@
+{
+  "proc_0": {
+    "procedure_id": "proc_0",
+    "name": "low_focus_recovery",
+    "description": "When focus drops below 0.3",
+    "steps": [
+      "Recognize focus is degraded",
+      "Reduce task difficulty by 20%",
+      "Simplify current task",
+      "Monitor focus recovery"
+    ],
+    "success_rate": 0.5,
+    "times_used": 0,
+    "condition": {
+      "focus": {
+        "less_than": 0.3
+      }
+    },
+    "metadata": {
+      "severity": "medium"
+    }
+  },
+  "proc_1": {
+    "procedure_id": "proc_1",
+    "name": "fatigue_recovery",
+    "description": "When fatigue exceeds safe level (>0.75)",
+    "steps": [
+      "Pause current task",
+      "Wait 1-2 cycles",
+      "Reset difficulty to baseline",
+      "Reassess system state"
+    ],
+    "success_rate": 0.5,
+    "times_used": 0,
+    "condition": {
+      "fatigue": {
+        "greater_than": 0.75
+      }
+    },
+    "metadata": {
+      "severity": "high"
+    }
+  },
+  "proc_2": {
+    "procedure_id": "proc_2",
+    "name": "success_acceleration",
+    "description": "When success rate exceeds 0.85",
+    "steps": [
+      "Recognize excellent performance",
+      "Increase difficulty by 15%",
+      "Push learning boundaries",
+      "Track cognitive load"
+    ],
+    "success_rate": 0.5,
+    "times_used": 0,
+    "condition": {
+      "success_score": {
+        "greater_than": 0.85
+      }
+    },
+    "metadata": {
+      "severity": "low",
+      "risk": "learning opportunity"
+    }
+  }
+}

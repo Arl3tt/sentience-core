@@ -144,11 +144,7 @@ class PersonalizationEngine:
             return {"risk_level": "unknown", "reason": "no_analytics"}
 
         # Simulate fatigue accumulation
-        # Estimate rate from baseline: if avg_fatigue is 0.30 and user has done 10+ cycles
-        if self.profile.learning.total_cycles > 0:
-            accumulation_rate = self.profile.baseline.avg_fatigue / max(1, self.profile.learning.total_cycles)
-        else:
-            accumulation_rate = 0.05  # Default estimate
+        accumulation_rate = self.profile.baseline.avg_fatigue / max(1, len(self.profile.learning.total_cycles))
         predicted_fatigue = current_fatigue + (accumulation_rate * num_cycles)
         predicted_fatigue = min(predicted_fatigue, 1.0)
 
